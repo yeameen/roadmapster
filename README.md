@@ -1,6 +1,6 @@
 # Roadmapster
 
-A visual capacity planning tool for software development teams that transforms quarterly planning from spreadsheet-based processes into an engaging, Tetris-inspired visual experience.
+A visual capacity planning tool for software development teams that relies on available capacity to guide in planning
 
 ## Overview
 
