@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Quarter, Epic, Team, TSHIRT_SIZE_DAYS } from '../types';
 import { calculateTeamCapacity } from '../utils/capacityCalculations';
 import { EpicCard } from './EpicCard';
-import { ChevronDown, ChevronRight, Play, Check, MoreVertical } from 'lucide-react';
+import { ChevronDown, ChevronRight, MoreVertical } from 'lucide-react';
 import { useDroppable } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -42,11 +42,12 @@ const SortableQuarterEpic: React.FC<SortableQuarterEpicProps> = ({ epic, onEdit 
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style} {...attributes}>
       <EpicCard 
         epic={epic} 
         isDragging={isDragging} 
         onEdit={onEdit}
+        dragListeners={listeners}
       />
     </div>
   );
@@ -104,32 +105,6 @@ export const QuarterView: React.FC<QuarterViewProps> = ({
           </button>
           <h3 className="quarter-title">{quarter.name}</h3>
           <span className="quarter-epic-count">({quarterEpics.length} epics)</span>
-          
-          {quarter.status === 'planning' && (
-            <button
-              onClick={() => onQuarterAction(quarter.id, 'start')}
-              className="quarter-action-button start"
-              title="Start Quarter"
-            >
-              <Play size={14} />
-              Start
-            </button>
-          )}
-          
-          {quarter.status === 'active' && (
-            <button
-              onClick={() => onQuarterAction(quarter.id, 'complete')}
-              className="quarter-action-button complete"
-              title="Complete Quarter"
-            >
-              <Check size={14} />
-              Complete
-            </button>
-          )}
-          
-          {quarter.status === 'completed' && (
-            <span className="quarter-status-badge">Completed</span>
-          )}
         </div>
         
         <div className="quarter-header-right">

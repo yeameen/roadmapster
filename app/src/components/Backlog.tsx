@@ -38,11 +38,12 @@ const SortableEpic: React.FC<SortableEpicProps> = ({ epic, onEdit }) => {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style} {...attributes}>
       <EpicCard 
         epic={epic} 
         isDragging={isDragging} 
         onEdit={onEdit}
+        dragListeners={listeners}
       />
     </div>
   );

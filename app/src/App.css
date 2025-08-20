@@ -226,49 +226,6 @@ body {
   color: #718096;
 }
 
-.quarter-action-button {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.75rem;
-  font-size: 0.8125rem;
-  border-radius: 0.25rem;
-  border: 1px solid;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-weight: 500;
-}
-
-.quarter-action-button.start {
-  background: #10b981;
-  border-color: #10b981;
-  color: white;
-}
-
-.quarter-action-button.start:hover {
-  background: #059669;
-  border-color: #059669;
-}
-
-.quarter-action-button.complete {
-  background: #3b82f6;
-  border-color: #3b82f6;
-  color: white;
-}
-
-.quarter-action-button.complete:hover {
-  background: #2563eb;
-  border-color: #2563eb;
-}
-
-.quarter-status-badge {
-  padding: 0.25rem 0.75rem;
-  background: #e5e7eb;
-  color: #6b7280;
-  border-radius: 0.25rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-}
 
 .quarter-capacity-info {
   display: flex;
@@ -403,8 +360,15 @@ body {
 
 .drag-handle {
   color: #a0aec0;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   margin-right: 0.5rem;
+  cursor: grab;
+  padding: 0.125rem;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
 }
 
 .epic-priority {
