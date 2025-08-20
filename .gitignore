@@ -116,7 +116,7 @@ out/
 
 # Gatsby (for future use)
 .cache/
-public/
+# public/  # Commented out to allow app/public
 
 # Serverless
 .serverless/
