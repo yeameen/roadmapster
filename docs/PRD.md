@@ -9,26 +9,28 @@
 *"Fit your work perfectly into your team's capacity"*
 
 ### Product Vision
-WorkTetris enables product and engineering teams to effectively plan quarterly work based on team capacity, prioritize epics, and dynamically adjust plans as work progresses.
+WorkTetris enables product and engineering teams to effectively plan multiple quarters of work based on team capacity, prioritize epics, and dynamically adjust plans as work progresses. The tool provides a Jira-sprint-like interface for managing quarters, making it familiar and intuitive for development teams.
 
 ### Problem Statement
 Teams currently use disconnected spreadsheets and visual boards to plan capacity, leading to:
 - High friction when updating priorities mid-quarter
-- Difficulty visualizing remaining capacity
+- Difficulty visualizing remaining capacity across multiple quarters
 - Manual calculations prone to errors
 - Poor visibility into capacity constraints when prioritizing work
+- Inability to easily plan beyond the current quarter
 
 ### Success Metrics
 1. Enable data-driven project prioritization based on actual team capacity
 2. Reduce friction in replanning by 80% (measured by time to update quarterly plan)
 3. Increase accuracy of quarterly planning (measured by planned vs. delivered work)
+4. Enable multi-quarter roadmap planning with capacity validation
 
 ## 2. User Personas
 
 ### Primary Users
-- **Product Managers**: Need to prioritize features and understand what fits in a quarter
-- **Engineering Managers**: Need to allocate team capacity and manage constraints
-- **Engineers**: Need visibility into planned work and capacity allocation
+- **Product Managers**: Need to prioritize features and understand what fits across multiple quarters
+- **Engineering Managers**: Need to allocate team capacity and manage constraints over time
+- **Engineers**: Need visibility into planned work and capacity allocation for upcoming quarters
 
 ## 3. Core Features
 
@@ -36,7 +38,7 @@ Teams currently use disconnected spreadsheets and visual boards to plan capacity
 
 #### Team Capacity Configuration
 - **Global team settings**:
-  - Working days per quarter (fixed for all members, e.g., 65 days for Q1 2025)
+  - Working days per quarter (configurable per quarter, e.g., 65 days for Q1 2025)
   - Buffer percentage (default: 20%)
   - Oncall allocation per sprint (default: 1 person)
 
@@ -60,7 +62,7 @@ Teams currently use disconnected spreadsheets and visual boards to plan capacity
 #### Example Capacity Calculation
 For Q2 2025 with 4 team members:
 ```
-Quarter Working Days: 65 days (fixed for all)
+Quarter Working Days: 65 days (configured for Q2)
 Team Members:
   - Alice: 5 vacation days → 60 days available
   - Bob: 10 vacation days → 55 days available  
@@ -72,7 +74,7 @@ Oncall Deduction: 6 sprints × 10 days = 60 days
 Capacity after Oncall: 234 - 60 = 174 days
 Final Capacity (20% buffer): 174 × 0.8 = 139 days
 
-WorkTetris displays: "139 days available for epics"
+Quarter displays: "139 days available (0/139 days used, 0%)"
 ```
 
 ### 3.2 Epic Management
@@ -82,9 +84,9 @@ WorkTetris displays: "139 days available for epics"
   - Title
   - T-shirt size (XS, S, M, L, XL)
   - Priority level (P0, P1, P2, P3) or rank order
-  - Quarter assignment
   
 - **Optional fields**:
+  - Quarter assignment (automatic when dragged to quarter)
   - Required skills/expertise
   - Dependencies on other epics
   - Description
@@ -100,60 +102,101 @@ WorkTetris displays: "139 days available for epics"
 ### 3.3 Planning Board
 
 #### Visual Layout
-- **Three-column view**:
+- **Two-panel view**:
   1. **Backlog** (left): Prioritized list of epics not yet scheduled
-  2. **Quarterly Plan** (center): Current quarter divided into months/sprints
-  3. **Capacity Indicator** (top/side): Real-time capacity remaining
+  2. **Quarters Panel** (right): Vertically stacked quarters with collapsible views
+
+#### Quarter Display
+- **Collapsed Quarter View**:
+  - Quarter name (e.g., "Q2 2025")
+  - Status indicator (Planning/Active/Completed)
+  - Capacity summary (e.g., "40/139 days, 29%")
+  - Epic count (e.g., "3 epics")
+  - Expand/collapse chevron icon
+
+- **Expanded Quarter View**:
+  - All assigned epics displayed as cards
+  - Drop zone for dragging epics from backlog
+  - Real-time capacity updates
+  - Action buttons (Start/Complete quarter)
 
 #### Drag-and-Drop Functionality
-- Drag epics from backlog to quarter
+- Drag epics from backlog to any quarter
+- Reorder epics within a quarter
+- Move epics between quarters
 - Automatic capacity calculation on drop
 - Visual warnings when approaching capacity limits
 - Prevent over-allocation with clear error messages
 
-#### Capacity Visualization
-- **Progress bar**: Shows used vs. available capacity
+#### Capacity Visualization (Per Quarter)
+- **Progress bar**: Shows used vs. available capacity for each quarter
 - **Color coding**: 
-  - Green: 0-70% capacity used
-  - Yellow: 70-90% capacity used  
+  - Green: 0-75% capacity used
+  - Orange: 75-90% capacity used  
   - Red: 90-100% capacity used
-- **Numeric display**: "X days remaining of Y total"
+- **Numeric display**: "X/Y days (Z%)"
 
-### 3.4 Priority Management
+### 3.4 Quarter Lifecycle Management
+
+#### Quarter States
+- **Planning**: Quarter being prepared, can be edited freely
+- **Active**: Current working quarter, highlighted with green indicator
+- **Completed**: Finished quarter, shown with gray badge
+
+#### Quarter Actions
+- **Create Quarter**: Add new quarters for future planning
+- **Start Quarter**: Transition from Planning to Active state
+- **Complete Quarter**: Mark quarter as finished
+- **Edit Quarter**: Modify quarter settings (name, working days)
+- **Delete Quarter**: Remove quarter (moves epics back to backlog)
+
+#### Quarter Configuration
+- Quarter name (e.g., "Q2 2025")
+- Working days for the quarter
+- Start/end dates (optional)
+- Team assignment (for multi-team support in V2)
+
+### 3.5 Priority Management
 
 #### Backlog Organization
 - Sort by priority (P0 > P1 > P2 > P3)
-- Or manual rank ordering
+- Visual grouping by priority level
 - Filter by required skills
 - Search functionality
 
-#### Priority Buckets
-- High Priority (Must Do)
-- Medium Priority (Should Do)
-- Low Priority (Nice to Have)
-- Future/Parking Lot
+#### Priority Groups
+- Critical (Must Do) - P0
+- High Priority - P1
+- Medium Priority - P2
+- Low Priority - P3
 
 ## 4. Technical Requirements
 
-### 4.1 Version 1 (MVP)
+### 4.1 Version 1 (MVP) - Current Implementation
 
 #### Architecture
-- **Frontend**: React/Vue.js single-page application
-- **Backend**: Node.js/Python lightweight API
-- **Storage**: Local storage or session storage (minimal persistence)
-- **Deployment**: Single web container (Docker)
+- **Frontend**: React with TypeScript single-page application
+- **State Management**: React hooks with localStorage persistence
+- **Drag & Drop**: @dnd-kit library for smooth interactions
+- **Styling**: CSS3 with modern flexbox/grid layouts
+- **Icons**: Lucide React icons
+- **Build Tool**: Create React App with Webpack
 
 #### Core Functionality
-- Single team view
+- Multiple quarter management with Jira-sprint-style interface
+- Collapsible/expandable quarters
 - Basic CRUD for epics and team members
-- Drag-and-drop epic scheduling
-- Real-time capacity calculations
-- Export to JSON/CSV
+- Drag-and-drop epic scheduling across quarters
+- Real-time capacity calculations per quarter
+- Quarter lifecycle management (Planning/Active/Completed)
+- Export/Import to JSON
+- localStorage persistence
 
 ### 4.2 Version 2
 
 #### Enhanced Architecture
 - **Database**: PostgreSQL for persistent storage
+- **Backend**: Node.js/Express API
 - **Authentication**: OAuth 2.0 (Google/Microsoft)
 - **Multi-tenancy**: Team/organization isolation
 
@@ -166,6 +209,7 @@ WorkTetris displays: "139 days available for epics"
 - Skill-based capacity matching
 - Undo/redo functionality
 - Comments and notes on epics
+- Quarter templates
 
 ### 4.3 Version 3
 
@@ -184,11 +228,12 @@ WorkTetris displays: "139 days available for epics"
   - Holiday calendars
 
 #### Advanced Features
-- Multi-quarter planning
+- Velocity tracking across quarters
 - Scenario planning (what-if analysis)
 - Capacity forecasting based on historical data
 - API for external tool integration
 - Advanced reporting and analytics
+- Quarter comparison views
 
 ## 5. User Interface Specifications
 
@@ -196,27 +241,30 @@ WorkTetris displays: "139 days available for epics"
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  WorkTetris                                    Q2 2025      │
-│  65 working days/person | 4 team members                    │
-│  Team Capacity: 139 days (after oncall & buffer)            │
-│  [████████████░░░░░░░] 35% utilized (49/139 days)          │
+│  WorkTetris                    [Settings] [Export] [Import]  │
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
-│  Backlog          │     Q2 2025 Plan                        │
-│  ─────────        │     ──────────────                      │
-│  P0 Items:        │     April    May     June               │
-│  ┌─────────┐      │     ┌──────┐                            │
-│  │Epic A(M)│      │     │Epic D│ ┌──────┐                   │
-│  └─────────┘      │     │ (S)  │ │Epic F│                   │
-│  ┌─────────┐      │     └──────┘ │ (M)  │                   │
-│  │Epic B(L)│      │               └──────┘                   │
-│  └─────────┘      │     ┌──────┐                            │
-│                   │     │Epic E│                             │
-│  P1 Items:        │     │ (XS) │                             │
-│  ┌─────────┐      │     └──────┘                            │
-│  │Epic C(S)│      │                                          │
-│  └─────────┘      │                                          │
-│                   │                                          │
+│  Backlog              │     Quarters                        │
+│  ─────────            │     ─────────                       │
+│                       │                                      │
+│  [+ Add Epic]         │     ▼ Q2 2025 [Start]              │
+│                       │     ████████░░░░ 40/139 days (29%)  │
+│  Critical (P0):       │     ┌─────────┐                     │
+│  ┌─────────┐          │     │Epic D(S)│                     │
+│  │Epic A(M)│          │     └─────────┘                     │
+│  └─────────┘          │     ┌─────────┐                     │
+│                       │     │Epic F(M)│                     │
+│  High (P1):           │     └─────────┘                     │
+│  ┌─────────┐          │                                      │
+│  │Epic B(L)│          │     ▶ Q3 2025  15/139 days (11%)    │
+│  └─────────┘          │                                      │
+│  ┌─────────┐          │     ▼ Q4 2025 [Start]              │
+│  │Epic C(S)│          │     ░░░░░░░░░░ 0/139 days (0%)     │
+│  └─────────┘          │     [Drop epics here]               │
+│                       │                                      │
+│  Medium (P2):         │     [+ Create Quarter]              │
+│  (empty)              │                                      │
+│                       │                                      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -225,18 +273,35 @@ WorkTetris displays: "139 days available for epics"
 ```
 Team Settings
 ─────────────────
-Quarter: Q2 2025
-Working Days This Quarter: 65 (fixed)
 Buffer: [20]%
 Oncall per Sprint: [1] person
+Sprints per Quarter: [6]
 
 Team Members
 ─────────────────
-Name: [___________]
-Vacation Days: [___]
-Skills: [dropdown multiselect]
+Name         Vacation Days    Skills
+Alice        [5]             [React, Node.js ▼]
+Bob          [10]            [Python, AWS ▼]
+Carol        [3]             [React, CSS ▼]
+Dan          [8]             [Node.js, K8s ▼]
 
-[+ Add Member] [Save]
+[+ Add Member] [Save] [Cancel]
+```
+
+### 5.3 Quarter Configuration Modal
+
+```
+Quarter Settings
+─────────────────
+Quarter Name: [Q2 2025]
+Working Days: [65]
+Status: [Planning ▼]
+
+Optional:
+Start Date: [____-__-__]
+End Date: [____-__-__]
+
+[Delete Quarter] [Save] [Cancel]
 ```
 
 ## 6. Data Model
@@ -247,22 +312,28 @@ Skills: [dropdown multiselect]
 Team:
   - id: UUID
   - name: string
+  - quarterWorkingDays: integer (default per quarter)
+  - bufferPercentage: float (e.g., 0.20)
+  - oncallPerSprint: integer (e.g., 1)
+  - sprintsInQuarter: integer (e.g., 6)
   - created_at: timestamp
-  - settings: JSON
 
 Quarter:
   - id: UUID
-  - team_id: UUID
-  - quarter_name: string (e.g., "Q2 2025")
-  - working_days: integer (e.g., 65)
-  - buffer_percentage: float (e.g., 0.20)
-  - oncall_per_sprint: integer (e.g., 1)
+  - name: string (e.g., "Q2 2025")
+  - status: enum(planning, active, completed)
+  - workingDays: integer (e.g., 65)
+  - teamId: UUID
+  - isCollapsed: boolean
+  - startDate: date (optional)
+  - endDate: date (optional)
+  - created_at: timestamp
 
 TeamMember:
   - id: UUID
-  - team_id: UUID
+  - teamId: UUID
   - name: string
-  - vacation_days: integer
+  - vacationDays: integer
   - skills: array[string]
 
 Epic:
@@ -270,18 +341,19 @@ Epic:
   - title: string
   - size: enum(XS, S, M, L, XL)
   - priority: enum(P0, P1, P2, P3)
-  - required_skills: array[string]
-  - dependencies: array[UUID]
-  - quarter: string
   - status: enum(backlog, planned, in_progress, completed)
-  - position: integer
+  - quarterId: UUID (nullable - null when in backlog)
+  - position: integer (order within quarter)
+  - description: string (optional)
+  - owner: string (optional)
+  - requiredSkills: array[string]
+  - dependencies: array[UUID]
 
 CapacityLog:
   - id: UUID
-  - team_id: UUID
-  - quarter: string
-  - total_capacity: integer
-  - used_capacity: integer
+  - quarterId: UUID
+  - totalCapacity: integer
+  - usedCapacity: integer
   - timestamp: timestamp
 ```
 
@@ -290,21 +362,31 @@ CapacityLog:
 ### 7.1 Endpoints
 
 ```
-GET    /api/teams/{teamId}/quarters/{quarter}
-PUT    /api/teams/{teamId}/quarters/{quarter}
+# Quarters
+GET    /api/quarters
+POST   /api/quarters
+PUT    /api/quarters/{quarterId}
+DELETE /api/quarters/{quarterId}
+POST   /api/quarters/{quarterId}/start
+POST   /api/quarters/{quarterId}/complete
 
+# Team & Capacity
 GET    /api/teams/{teamId}/capacity
 POST   /api/teams/{teamId}/members
 PUT    /api/teams/{teamId}/members/{memberId}
 DELETE /api/teams/{teamId}/members/{memberId}
 
-GET    /api/teams/{teamId}/epics
-POST   /api/teams/{teamId}/epics
-PUT    /api/teams/{teamId}/epics/{epicId}
-DELETE /api/teams/{teamId}/epics/{epicId}
+# Epics
+GET    /api/epics
+POST   /api/epics
+PUT    /api/epics/{epicId}
+DELETE /api/epics/{epicId}
+POST   /api/epics/{epicId}/move
 
-POST   /api/teams/{teamId}/epics/{epicId}/move
-GET    /api/teams/{teamId}/history
+# Data Management
+GET    /api/export
+POST   /api/import
+GET    /api/history
 ```
 
 ## 8. Non-Functional Requirements
@@ -312,42 +394,53 @@ GET    /api/teams/{teamId}/history
 ### Performance
 - Page load time < 2 seconds
 - Drag-and-drop response < 100ms
-- Support 100+ epics per view
+- Support 100+ epics across multiple quarters
+- Smooth expand/collapse animations
 
 ### Reliability
 - 99.9% uptime
-- Automatic save every 30 seconds (V2+)
-- Offline capability with sync on reconnect (V3)
+- localStorage persistence for offline capability
+- Automatic save on every change (V1)
+- Server sync every 30 seconds (V2+)
 
 ### Security
 - HTTPS only
 - Authentication required (V2+)
 - Team-level data isolation (V2+)
+- Secure export/import validation
 
 ### Usability
 - Mobile-responsive design
 - Keyboard shortcuts for common actions
 - Accessible (WCAG 2.1 AA compliant)
+- Familiar Jira-like interface for easy adoption
 
 ## 9. Implementation Phases
 
-### Phase 1: MVP (4 weeks)
-- Basic capacity calculation
-- Simple drag-and-drop board
-- Single team support
-- Local storage
+### Phase 1: MVP (Completed)
+- ✅ Multiple quarter management
+- ✅ Collapsible/expandable quarters
+- ✅ Quarter lifecycle states
+- ✅ Basic capacity calculation
+- ✅ Drag-and-drop between quarters
+- ✅ Team configuration
+- ✅ Local storage persistence
+- ✅ Export/Import functionality
 
 ### Phase 2: Multi-User (6 weeks)
 - User authentication
-- Persistent storage
+- Backend API development
+- Database persistence
 - Multiple teams
 - Historical tracking
+- Real-time collaboration
 
 ### Phase 3: Integrations (8 weeks)
 - Jira integration
 - Advanced features
-- API development
+- External API
 - HR system integration
+- Analytics dashboard
 
 ## 10. Open Questions & Future Considerations
 
@@ -356,116 +449,138 @@ GET    /api/teams/{teamId}/history
 3. Should we add Monte Carlo simulation for capacity planning?
 4. Integration with OKR planning tools?
 5. Mobile native apps needed?
+6. Should quarters auto-transition states based on dates?
+7. How to handle epic dependencies across quarters?
 
 ## Appendix A: User Stories
 
-### MVP User Stories
+### MVP User Stories (Implemented)
 
 #### As a Product Manager:
-1. I want to see my team's total capacity for the quarter so I can understand our constraints
-2. I want to drag epics from backlog to the quarter plan so I can quickly test different scenarios
-3. I want to see remaining capacity in real-time so I know when we're at limit
-4. I want to organize epics by priority so I can ensure important work gets scheduled first
+1. ✅ I want to see multiple quarters at once so I can plan long-term roadmaps
+2. ✅ I want to collapse/expand quarters so I can focus on specific planning periods
+3. ✅ I want to drag epics between quarters so I can easily rebalance work
+4. ✅ I want to see each quarter's capacity so I know utilization at a glance
+5. ✅ I want to create new quarters so I can extend planning horizons
 
 #### As an Engineering Manager:
-1. I want to set the quarter's working days once for the whole team so setup is simple
-2. I want to input each team member's vacation days so capacity is accurate
-3. I want to account for oncall and other recurring work so it doesn't get forgotten
-4. I want to apply a safety buffer to capacity so we don't overcommit
-5. I want to see when specific skills are required so I can plan assignments
+1. ✅ I want to configure working days per quarter so capacity reflects reality
+2. ✅ I want to mark quarters as active/completed so team knows current focus
+3. ✅ I want to see capacity bars per quarter so I can prevent overcommitment
+4. ✅ I want to export/import plans so I can share with stakeholders
+5. ✅ I want to input vacation days so capacity calculations are accurate
 
 #### As an Engineer:
-1. I want to see what work is planned for the quarter so I know what's coming
-2. I want to understand dependencies between epics so I can sequence work properly
-3. I want to track changes to the plan so I understand what changed and why
+1. ✅ I want to see all planned quarters so I understand long-term commitments
+2. ✅ I want collapsed quarters to reduce clutter so I can focus on current work
+3. ✅ I want to see epic priorities so I know what's most important
 
 ### V2 User Stories
 
 #### As a Team Lead:
-1. I want multiple teams to share the same tool so we can coordinate cross-team work
-2. I want to track historical plans so we can improve estimation over time
-3. I want to split large epics that don't fit so we can make progress each quarter
-4. I want to add comments to epics so context isn't lost
+1. I want multiple teams in the same instance so we can coordinate
+2. I want to track velocity across quarters so estimates improve
+3. I want to split large epics across quarters so work progresses steadily
+4. I want audit logs so I can track plan changes
 
 #### As a Stakeholder:
-1. I want read-only access to view plans so I can stay informed without risk of changes
-2. I want to see audit logs of changes so I understand how plans evolved
-3. I want to export plans to share with leadership so reporting is easy
+1. I want read-only access so I can view without changing
+2. I want quarterly reports so I can track progress
+3. I want capacity forecasts so I can plan hiring
 
 ## Appendix B: Glossary
 
 - **Epic**: A large work item that delivers significant user value
 - **T-shirt Size**: Relative estimation technique using clothing sizes (XS, S, M, L, XL)
 - **Capacity**: Available person-days of work in a given time period
-- **Working Days**: Fixed number of business days in a quarter (typically 60-65 days)
+- **Quarter**: Three-month planning period (Q1, Q2, Q3, Q4)
+- **Quarter State**: Lifecycle phase of a quarter (Planning, Active, Completed)
+- **Working Days**: Configurable business days per quarter (typically 60-65 days)
 - **Buffer**: Safety margin applied to capacity to account for unknowns
 - **Oncall**: Rotating responsibility for production support
 - **Sprint**: Fixed time period for iterative development (typically 2 weeks)
-- **Quarter**: Three-month planning period (Q1, Q2, Q3, Q4)
 - **Backlog**: Prioritized list of work not yet scheduled
 - **Dependency**: Relationship where one epic must complete before another can start
 
 ## Appendix C: Acceptance Criteria
 
-### MVP Acceptance Criteria
+### MVP Acceptance Criteria (All Met)
 
-1. **Capacity Calculation**
-   - System uses fixed quarterly working days for all team members
-   - Individual capacity = Quarter working days - Vacation days
-   - Team capacity correctly sums individual capacities
-   - Oncall deduction applied at team level
-   - 20% buffer is applied by default
-   - Capacity updates immediately when vacation days change
+1. **Quarter Management**
+   - ✅ Can create multiple quarters
+   - ✅ Can edit quarter settings
+   - ✅ Can delete quarters (epics return to backlog)
+   - ✅ Can collapse/expand quarters
+   - ✅ Can transition quarter states
 
-2. **Drag and Drop**
-   - Epics can be dragged from backlog to quarter plan
-   - Epics can be reordered within backlog
-   - Epics can be moved back to backlog from plan
-   - Visual feedback during drag operation
+2. **Capacity Calculation**
+   - ✅ Each quarter shows individual capacity
+   - ✅ Capacity = (Working days - Vacation) - Oncall - Buffer
+   - ✅ Real-time capacity updates
+   - ✅ Color-coded capacity warnings
 
-3. **Capacity Warnings**
-   - Yellow warning appears at 70% capacity
-   - Red warning appears at 90% capacity
-   - Cannot exceed 100% capacity
+3. **Drag and Drop**
+   - ✅ Drag from backlog to any quarter
+   - ✅ Drag between quarters
+   - ✅ Reorder within quarters
+   - ✅ Visual feedback during drag
+   - ✅ Capacity validation on drop
 
 4. **Data Persistence**
-   - Changes persist during browser session
-   - Option to export current state as JSON
-   - Option to import previously exported state
+   - ✅ localStorage saves all changes
+   - ✅ Export to JSON with all data
+   - ✅ Import from JSON restores state
+   - ✅ Survives browser refresh
 
-## Appendix D: Branding & UI Theme
+## Appendix D: Visual Design System
 
-### WorkTetris Visual Identity
+### WorkTetris Design Language
 
-The WorkTetris name should be reflected in the UI through subtle Tetris-inspired elements:
+The current implementation uses a clean, professional design inspired by Jira:
 
-1. **Epic Cards**: Styled as "pieces" with distinct colors per size
-   - XS: Single square (light blue)
-   - S: Two squares (yellow)
-   - M: L-shaped piece (orange)
-   - L: Long piece (cyan)
-   - XL: Large square (purple)
+1. **Color Palette**:
+   - Background: #f5f7fa (light gray)
+   - Panels: White with subtle borders
+   - Primary Action: #3b82f6 (blue)
+   - Success: #10b981 (green)
+   - Warning: #f59e0b (orange)
+   - Danger: #ef4444 (red)
 
-2. **Fit Feedback**: 
-   - Satisfying "snap" animation when epic fits into capacity
-   - Gentle shake animation if epic doesn't fit
-   - "Line clear" effect when quarter is perfectly filled
+2. **Epic Cards**:
+   - Clean white cards with subtle shadows
+   - T-shirt size badges with color coding
+   - Priority indicators (P0-P3)
+   - Drag handle icon for affordance
 
-3. **Capacity Meter**: 
-   - Styled like a Tetris playing field filling up
-   - Shows "ghost" placement while dragging
+3. **Quarter States**:
+   - Planning: Blue left border
+   - Active: Green left border + Start button
+   - Completed: Gray styling + badge
 
-4. **Sound Effects** (optional, with mute):
-   - Soft "click" when placing epic
-   - Pleasant "complete" sound when reaching optimal capacity
-   - Warning sound when approaching overflow
+4. **Interactions**:
+   - Smooth expand/collapse animations
+   - Drag preview with opacity
+   - Hover states on all interactive elements
+   - Clear drop zones when dragging
 
-### Marketing Positioning
+5. **Typography**:
+   - System fonts for performance
+   - Clear hierarchy with size and weight
+   - Consistent spacing throughout
 
-**WorkTetris** - Where planning meets play. Transform quarterly planning from a spreadsheet slog into an engaging visual experience. Just like Tetris, you'll find the perfect fit for every piece of work.
+### User Experience Principles
+
+1. **Familiarity**: Jira-like patterns for easy adoption
+2. **Clarity**: Clear visual hierarchy and states
+3. **Efficiency**: Minimal clicks to accomplish tasks
+4. **Feedback**: Immediate visual response to actions
+5. **Flexibility**: Support various planning workflows
 
 ---
 
-*This PRD is designed to be consumed by an LLM agent for implementation. Each section provides specific, actionable requirements that can be translated directly into code.*
+*This PRD reflects the current implementation of WorkTetris with Jira-sprint-style quarter management. The system provides an intuitive, scalable solution for multi-quarter capacity planning.*
+
+*Last Updated: August 2024*
+*Version: 1.1 - Updated to reflect implemented features*
 
 *WorkTetris - Fit your work perfectly into your team's capacity.*
