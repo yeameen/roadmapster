@@ -220,16 +220,6 @@ function App() {
 
   const handleQuarterAction = (quarterId: string, action: string) => {
     switch (action) {
-      case 'start':
-        setQuarters(quarters.map(q => 
-          q.id === quarterId ? { ...q, status: 'active' } : q
-        ));
-        break;
-      case 'complete':
-        setQuarters(quarters.map(q => 
-          q.id === quarterId ? { ...q, status: 'completed' } : q
-        ));
-        break;
       case 'edit':
         const quarter = quarters.find(q => q.id === quarterId);
         if (quarter) {
