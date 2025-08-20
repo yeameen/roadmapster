@@ -96,17 +96,17 @@ const DEFAULT_QUARTERS: Quarter[] = [
 
 function App() {
   const [team, setTeam] = useState<Team>(() => {
-    const savedTeam = localStorage.getItem('worktetris-team');
+    const savedTeam = localStorage.getItem('roadmapster-team');
     return savedTeam ? JSON.parse(savedTeam) : DEFAULT_TEAM;
   });
   
   const [epics, setEpics] = useState<Epic[]>(() => {
-    const savedEpics = localStorage.getItem('worktetris-epics');
+    const savedEpics = localStorage.getItem('roadmapster-epics');
     return savedEpics ? JSON.parse(savedEpics) : SAMPLE_EPICS;
   });
   
   const [quarters, setQuarters] = useState<Quarter[]>(() => {
-    const savedQuarters = localStorage.getItem('worktetris-quarters');
+    const savedQuarters = localStorage.getItem('roadmapster-quarters');
     return savedQuarters ? JSON.parse(savedQuarters) : DEFAULT_QUARTERS;
   });
   
@@ -118,18 +118,24 @@ function App() {
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
     useSensor(KeyboardSensor)
   );
 
   useEffect(() => {
-    localStorage.setItem('worktetris-team', JSON.stringify(team));
-    localStorage.setItem('worktetris-epics', JSON.stringify(epics));
-    localStorage.setItem('worktetris-quarters', JSON.stringify(quarters));
+    localStorage.setItem('roadmapster-team', JSON.stringify(team));
+    localStorage.setItem('roadmapster-epics', JSON.stringify(epics));
+    localStorage.setItem('roadmapster-quarters', JSON.stringify(quarters));
   }, [team, epics, quarters]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    
+    console.log('Drag ended:', { activeId: active.id, overId: over?.id });
     
     if (!over) return;
     
@@ -253,7 +259,7 @@ function App() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `worktetris-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `roadmapster-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -281,7 +287,7 @@ function App() {
   return (
     <div className="app">
       <div className="app-header">
-        <h2 className="app-title">WorkTetris</h2>
+        <h2 className="app-title">Roadmapster</h2>
         <div className="app-toolbar">
           <button onClick={() => setIsTeamConfigOpen(true)} className="toolbar-button">
             <Settings size={16} />

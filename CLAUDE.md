@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-WorkTetris is a visual capacity planning tool for software development teams, currently in the pre-implementation phase. The project aims to transform quarterly planning from spreadsheet-based processes into an engaging, Tetris-inspired visual experience.
+Roadmapster is a visual capacity planning tool for software development teams, currently in the pre-implementation phase. The project aims to transform quarterly planning from spreadsheet-based processes into an engaging, Tetris-inspired visual experience.
 
 ## Current Status
 
@@ -42,14 +42,14 @@ This repository contains a comprehensive Product Requirements Document (PRD) but
 
 For React setup:
 ```bash
-npx create-react-app work-tetris --template typescript
+npx create-react-app roadmapster --template typescript
 npm install
 npm start
 ```
 
 For Vue.js setup:
 ```bash
-npm create vue@latest work-tetris
+npm create vue@latest roadmapster
 npm install
 npm run dev
 ```
@@ -75,7 +75,7 @@ npm run dev
 
 ## Important Files
 
-- `work-tetris-prd.md`: Complete product requirements and specifications
+- `PRD.md`: Complete product requirements and specifications
 
 ## Next Steps for Development
 

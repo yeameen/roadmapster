@@ -7,9 +7,10 @@ interface EpicCardProps {
   isDragging?: boolean;
   onEdit?: (epic: Epic) => void;
   dragListeners?: any;
+  dragAttributes?: any;
 }
 
-export const EpicCard: React.FC<EpicCardProps> = ({ epic, isDragging, onEdit, dragListeners }) => {
+export const EpicCard: React.FC<EpicCardProps> = ({ epic, isDragging, onEdit, dragListeners, dragAttributes }) => {
   const backgroundColor = TSHIRT_SIZE_COLORS[epic.size];
   const days = TSHIRT_SIZE_DAYS[epic.size];
 
@@ -32,6 +33,7 @@ export const EpicCard: React.FC<EpicCardProps> = ({ epic, isDragging, onEdit, dr
       <div className="epic-card-header">
         <div 
           className="drag-handle" 
+          {...(dragAttributes || {})}
           {...(dragListeners || {})}
           onClick={handleDragHandleClick}
         >

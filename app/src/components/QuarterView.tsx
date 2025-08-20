@@ -42,12 +42,13 @@ const SortableQuarterEpic: React.FC<SortableQuarterEpicProps> = ({ epic, onEdit 
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes}>
+    <div ref={setNodeRef} style={style}>
       <EpicCard 
         epic={epic} 
         isDragging={isDragging} 
         onEdit={onEdit}
         dragListeners={listeners}
+        dragAttributes={attributes}
       />
     </div>
   );

@@ -1,10 +1,10 @@
-# WorkTetris
+# Roadmapster
 
 A visual capacity planning tool for software development teams that transforms quarterly planning from spreadsheet-based processes into an engaging, Tetris-inspired visual experience.
 
 ## Overview
 
-WorkTetris provides an intuitive drag-and-drop interface for managing team capacity across multiple quarters. Similar to Jira's sprint planning but focused on quarter-level capacity management, it helps teams visualize workload distribution and prevent overcommitment.
+Roadmapster provides an intuitive drag-and-drop interface for managing team capacity across multiple quarters. Similar to Jira's sprint planning but focused on quarter-level capacity management, it helps teams visualize workload distribution and prevent overcommitment.
 
 ## Features
 
@@ -37,8 +37,8 @@ WorkTetris provides an intuitive drag-and-drop interface for managing team capac
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/work-tetris.git
-cd work-tetris
+git clone https://github.com/yourusername/roadmapster.git
+cd roadmapster
 ```
 
 2. Install dependencies:
@@ -57,7 +57,7 @@ npm start
 ## Project Structure
 
 ```
-work-tetris/
+roadmapster/
 ├── README.md                 # This file
 ├── CLAUDE.md                # AI assistant instructions
 ├── docs/

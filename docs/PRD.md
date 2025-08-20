@@ -1,15 +1,15 @@
-# WorkTetris - Product Requirements Document
+# Roadmapster - Product Requirements Document
 
 ## 1. Executive Summary
 
 ### Product Name
-**WorkTetris** - A visual capacity planning tool where teams fit work items into their available capacity, just like pieces in Tetris.
+**Roadmapster** - A visual capacity planning tool where teams fit work items into their available capacity, just like pieces in Tetris.
 
 ### Tagline
 *"Fit your work perfectly into your team's capacity"*
 
 ### Product Vision
-WorkTetris enables product and engineering teams to effectively plan multiple quarters of work based on team capacity, prioritize epics, and dynamically adjust plans as work progresses. The tool provides a Jira-sprint-like interface for managing quarters, making it familiar and intuitive for development teams.
+Roadmapster enables product and engineering teams to effectively plan multiple quarters of work based on team capacity, prioritize epics, and dynamically adjust plans as work progresses. The tool provides a Jira-sprint-like interface for managing quarters, making it familiar and intuitive for development teams.
 
 ### Problem Statement
 Teams currently use disconnected spreadsheets and visual boards to plan capacity, leading to:
@@ -241,7 +241,7 @@ Quarter displays: "139 days available (0/139 days used, 0%)"
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  WorkTetris                    [Settings] [Export] [Import]  │
+│  Roadmapster                   [Settings] [Export] [Import]  │
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  Backlog              │     Quarters                        │
@@ -534,7 +534,7 @@ GET    /api/history
 
 ## Appendix D: Visual Design System
 
-### WorkTetris Design Language
+### Roadmapster Design Language
 
 The current implementation uses a clean, professional design inspired by Jira:
 
@@ -578,9 +578,9 @@ The current implementation uses a clean, professional design inspired by Jira:
 
 ---
 
-*This PRD reflects the current implementation of WorkTetris with Jira-sprint-style quarter management. The system provides an intuitive, scalable solution for multi-quarter capacity planning.*
+*This PRD reflects the current implementation of Roadmapster with Jira-sprint-style quarter management. The system provides an intuitive, scalable solution for multi-quarter capacity planning.*
 
 *Last Updated: August 2024*
 *Version: 1.1 - Updated to reflect implemented features*
 
-*WorkTetris - Fit your work perfectly into your team's capacity.*
+*Roadmapster - Fit your work perfectly into your team's capacity.*
