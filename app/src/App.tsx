@@ -120,7 +120,9 @@ function App() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 10,
+        delay: 150,
+        tolerance: 5,
       },
     }),
     useSensor(KeyboardSensor)

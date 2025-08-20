@@ -29,12 +29,12 @@ export const EpicCard: React.FC<EpicCardProps> = ({ epic, isDragging, onEdit, dr
       className={`epic-card ${isDragging ? 'dragging' : ''}`}
       style={{ backgroundColor }}
       onClick={handleClick}
+      {...(dragAttributes || {})}
+      {...(dragListeners || {})}
     >
       <div className="epic-card-header">
         <div 
           className="drag-handle" 
-          {...(dragAttributes || {})}
-          {...(dragListeners || {})}
           onClick={handleDragHandleClick}
         >
           <GripVertical size={16} />
