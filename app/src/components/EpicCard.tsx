@@ -6,10 +6,9 @@ interface EpicCardProps {
   epic: Epic;
   isDragging?: boolean;
   onEdit?: (epic: Epic) => void;
-  dragHandleProps?: any;
 }
 
-export const EpicCard: React.FC<EpicCardProps> = ({ epic, isDragging, onEdit, dragHandleProps }) => {
+export const EpicCard: React.FC<EpicCardProps> = ({ epic, isDragging, onEdit }) => {
   const backgroundColor = TSHIRT_SIZE_COLORS[epic.size];
   const days = TSHIRT_SIZE_DAYS[epic.size];
 
@@ -26,9 +25,7 @@ export const EpicCard: React.FC<EpicCardProps> = ({ epic, isDragging, onEdit, dr
       onClick={handleClick}
     >
       <div className="epic-card-header">
-        <div {...dragHandleProps} style={{ cursor: 'grab' }}>
-          <GripVertical className="drag-handle" size={16} />
-        </div>
+        <GripVertical className="drag-handle" size={16} />
         <span className="epic-priority">{epic.priority}</span>
         <span className="epic-size">{epic.size}</span>
       </div>

@@ -4,6 +4,7 @@ import { EpicCard } from './EpicCard';
 import { Plus, Archive } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useDroppable } from '@dnd-kit/core';
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -36,21 +37,22 @@ const SortableEpic: React.FC<SortableEpicProps> = ({ epic, onEdit }) => {
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const dragHandleProps = { ...attributes, ...listeners };
-
   return (
-    <div ref={setNodeRef} style={style}>
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <EpicCard 
         epic={epic} 
         isDragging={isDragging} 
         onEdit={onEdit}
-        dragHandleProps={dragHandleProps}
       />
     </div>
   );
 };
 
 export const Backlog: React.FC<BacklogProps> = ({ epics, onAddEpic, onEditEpic }) => {
+  const { setNodeRef, isOver } = useDroppable({
+    id: 'backlog',
+  });
+
   const backlogEpics = epics.filter(e => e.status === 'backlog');
   
   const priorityGroups: Record<Priority, Epic[]> = {
@@ -68,7 +70,7 @@ export const Backlog: React.FC<BacklogProps> = ({ epics, onAddEpic, onEditEpic }
   };
 
   return (
-    <div className="backlog">
+    <div className="backlog" ref={setNodeRef}>
       <div className="backlog-header">
         <h3>
           <Archive className="inline mr-2" size={20} />
@@ -80,7 +82,7 @@ export const Backlog: React.FC<BacklogProps> = ({ epics, onAddEpic, onEditEpic }
         </button>
       </div>
       
-      <div className="backlog-content">
+      <div className={`backlog-content ${isOver ? 'drag-over' : ''}`}>
         {(Object.keys(priorityGroups) as Priority[]).map(priority => {
           const epicsInPriority = priorityGroups[priority];
           if (epicsInPriority.length === 0) return null;

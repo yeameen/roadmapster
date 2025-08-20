@@ -41,15 +41,12 @@ const SortableQuarterEpic: React.FC<SortableQuarterEpicProps> = ({ epic, onEdit 
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const dragHandleProps = { ...attributes, ...listeners };
-
   return (
-    <div ref={setNodeRef} style={style}>
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <EpicCard 
         epic={epic} 
         isDragging={isDragging} 
         onEdit={onEdit}
-        dragHandleProps={dragHandleProps}
       />
     </div>
   );
