@@ -6,6 +6,9 @@ A visual capacity planning tool for software development teams that relies on av
 
 Roadmapster provides an intuitive drag-and-drop interface for managing team capacity across multiple quarters. Similar to Jira's sprint planning but focused on quarter-level capacity management, it helps teams visualize workload distribution and prevent overcommitment.
 
+![Roadmapster Main Interface](images/screenshot_main_window.jpeg)
+*Main planning interface showing backlog and quarterly capacity planning*
+
 ## Features
 
 ### Core Functionality
@@ -85,6 +88,9 @@ roadmapster/
 3. Drag epics from backlog to quarters to plan work
 4. Reorder epics within quarters by dragging
 
+![Epic Edit Dialog](images/epic_edit_view.png)
+*Epic creation and editing interface with all configurable fields*
+
 ### Managing Capacity
 - Each quarter shows real-time capacity utilization
 - Green bar: Under 75% capacity (healthy)
@@ -97,6 +103,9 @@ roadmapster/
    - Oncall rotation schedule
    - Buffer percentage for unknowns
    - Working days per quarter
+
+![Team Configuration](images/team_edit_view.png)
+*Team configuration interface for managing capacity calculations*
 
 ## Technology Stack
 
