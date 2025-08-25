@@ -84,3 +84,4 @@ npm run dev
 3. Set up development environment
 4. Create initial project structure following PRD specifications
 5. Implement MVP features in phases as outlined in PRD
+- Any time there is a code change that can impact functionality, test the functionality using UAT Tester. In case of a big refactor of the code, test the full functionality using UAT Tester
