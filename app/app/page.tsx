@@ -129,8 +129,6 @@ export default function Home() {
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 10,
-        delay: 150,
-        tolerance: 5,
       },
     }),
     useSensor(KeyboardSensor)

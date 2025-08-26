@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Epic, TSHIRT_SIZE_COLORS, TSHIRT_SIZE_DAYS } from '../types';
-import { GripVertical, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 interface EpicCardProps {
   epic: Epic;
@@ -22,9 +22,7 @@ export const EpicCard: React.FC<EpicCardProps> = ({ epic, isDragging, onEdit, dr
     }
   };
 
-  const handleDragHandleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-  };
+  
 
   return (
     <div
@@ -36,12 +34,7 @@ export const EpicCard: React.FC<EpicCardProps> = ({ epic, isDragging, onEdit, dr
       suppressHydrationWarning={true}
     >
       <div className="epic-card-header">
-        <div 
-          className="drag-handle" 
-          onClick={handleDragHandleClick}
-        >
-          <GripVertical size={16} />
-        </div>
+        
         <span className="epic-priority">{epic.priority}</span>
         <span className="epic-size">{epic.size}</span>
       </div>

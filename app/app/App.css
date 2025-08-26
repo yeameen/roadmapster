@@ -358,18 +358,7 @@ body {
   margin-bottom: 0.5rem;
 }
 
-.drag-handle {
-  color: #a0aec0;
-  display: inline-flex;
-  align-items: center;
-  margin-right: 0.5rem;
-  cursor: grab;
-  padding: 0.125rem;
-}
 
-.drag-handle:active {
-  cursor: grabbing;
-}
 
 .epic-priority {
   font-size: 0.75rem;
