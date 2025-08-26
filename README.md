@@ -46,13 +46,12 @@ cd roadmapster
 
 2. Install dependencies:
 ```bash
-cd app
 npm install
 ```
 
 3. Start the development server:
 ```bash
-npm start
+npm run dev
 ```
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser
@@ -63,16 +62,19 @@ npm start
 roadmapster/
 ├── README.md                 # This file
 ├── CLAUDE.md                # AI assistant instructions
+├── package.json             # Node.js dependencies
+├── next.config.mjs          # Next.js configuration
+├── tsconfig.json            # TypeScript configuration
 ├── docs/
 │   └── PRD.md              # Product Requirements Document
-├── app/                     # React application
-│   ├── package.json
-│   ├── public/
-│   └── src/
-│       ├── components/      # React components
-│       ├── types/           # TypeScript definitions
-│       └── utils/           # Utility functions
-└── .gitignore
+├── app/                     # Next.js app directory
+│   ├── layout.tsx          # Root layout
+│   ├── page.tsx            # Main page component
+│   ├── components/         # React components
+│   ├── types/              # TypeScript definitions
+│   ├── utils/              # Utility functions
+│   └── styles/             # CSS styles
+└── images/                  # Screenshots and documentation images
 ```
 
 ## Usage
@@ -109,12 +111,12 @@ roadmapster/
 
 ## Technology Stack
 
-- **Frontend**: React 18 with TypeScript
+- **Framework**: Next.js 14 with React 18 and TypeScript
 - **Styling**: CSS3 with modern flexbox/grid layouts
 - **Drag & Drop**: @dnd-kit for smooth interactions
 - **Icons**: Lucide React icons
 - **State Management**: React hooks with localStorage persistence
-- **Build Tool**: Create React App with Webpack
+- **Build Tool**: Next.js with Turbopack
 
 ## Development
 
@@ -122,13 +124,13 @@ roadmapster/
 
 ```bash
 # Start development server
-npm start
-
-# Run tests
-npm test
+npm run dev
 
 # Build for production
 npm run build
+
+# Start production server
+npm start
 
 # Run linter
 npm run lint
