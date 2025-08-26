@@ -6,6 +6,7 @@ import { X, Save } from 'lucide-react';
 
 interface QuarterFormProps {
   quarter?: Quarter;
+  existingQuarters?: Quarter[];
   onSave: (quarter: Quarter) => void;
   onCancel: () => void;
   isOpen: boolean;
@@ -14,6 +15,7 @@ interface QuarterFormProps {
 
 export const QuarterForm: React.FC<QuarterFormProps> = ({
   quarter,
+  existingQuarters = [],
   onSave,
   onCancel,
   isOpen,
@@ -46,8 +48,19 @@ export const QuarterForm: React.FC<QuarterFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Generate a sequential ID based on existing quarters
+    const generateQuarterId = () => {
+      // Find the highest numeric ID and increment it
+      const numericIds = existingQuarters
+        .map(q => parseInt(q.id))
+        .filter(id => !isNaN(id));
+      
+      const maxId = numericIds.length > 0 ? Math.max(...numericIds) : 0;
+      return (maxId + 1).toString();
+    };
+    
     const quarterData: Quarter = {
-      id: quarter?.id || Date.now().toString(),
+      id: quarter?.id || generateQuarterId(),
       name: formData.name || '',
       status: formData.status || 'planning',
       workingDays: formData.workingDays || 65,

@@ -146,17 +146,33 @@ export default function Home() {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     
-    console.log('Drag ended:', { activeId: active.id, overId: over?.id });
+    console.log('Drag ended:', { 
+      activeId: active.id, 
+      overId: over?.id,
+      overIdType: typeof over?.id,
+      overIdString: over?.id?.toString()
+    });
+    console.log('Available quarters:', quarters.map(q => ({ id: q.id, name: q.name })));
     
-    if (!over) return;
+    if (!over) {
+      console.log('No drop target detected');
+      return;
+    }
     
     const draggedEpic = epics.find(e => e.id === active.id);
-    if (!draggedEpic) return;
+    if (!draggedEpic) {
+      console.log('Dragged epic not found:', active.id);
+      return;
+    }
 
+    console.log('Processing drop on:', over.id);
     // Check if dropping on a quarter
     if (over.id.toString().startsWith('quarter-')) {
       const quarterId = over.id.toString().replace('quarter-', '');
+      console.log('Extracted quarterId:', quarterId);
+      console.log('Looking for quarter with this ID in:', quarters);
       const quarter = quarters.find(q => q.id === quarterId);
+      console.log('Found quarter:', quarter);
       
       if (quarter) {
         // Check capacity before adding
@@ -366,6 +382,7 @@ export default function Home() {
 
       <QuarterForm
         quarter={editingQuarter}
+        existingQuarters={quarters}
         onSave={handleSaveQuarter}
         onCancel={() => setIsQuarterFormOpen(false)}
         isOpen={isQuarterFormOpen}

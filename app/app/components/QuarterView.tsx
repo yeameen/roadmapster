@@ -153,6 +153,8 @@ export const QuarterView: React.FC<QuarterViewProps> = ({
         <div
           ref={setNodeRef}
           className={`quarter-content ${isOver ? 'drag-over' : ''}`}
+          data-droppable-id={`quarter-${quarter.id}`}
+          style={{ minHeight: '100px' }}
         >
           {quarterEpics.length > 0 ? (
             <SortableContext
@@ -172,7 +174,7 @@ export const QuarterView: React.FC<QuarterViewProps> = ({
               </div>
             </SortableContext>
           ) : (
-            <div className="quarter-empty">
+            <div className="quarter-empty" style={{ padding: '20px', minHeight: '80px' }}>
               <p>Drop epics here to plan this quarter</p>
             </div>
           )}
