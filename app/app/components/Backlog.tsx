@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Epic, Priority } from '../types';
 import { EpicCard } from './EpicCard';

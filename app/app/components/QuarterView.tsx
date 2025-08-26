@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Quarter, Epic, Team, TSHIRT_SIZE_DAYS } from '../types';
 import { calculateTeamCapacity } from '../utils/capacityCalculations';

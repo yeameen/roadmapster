@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Epic, TSHIRT_SIZE_COLORS, TSHIRT_SIZE_DAYS } from '../types';
 import { GripVertical, AlertCircle } from 'lucide-react';

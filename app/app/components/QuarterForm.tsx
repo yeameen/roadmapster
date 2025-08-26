@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { Quarter, QuarterStatus } from '../types';
 import { X, Save } from 'lucide-react';

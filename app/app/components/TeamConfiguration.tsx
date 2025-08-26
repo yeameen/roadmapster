@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Team, TeamMember } from '../types';
 import { X, Plus, Users } from 'lucide-react';

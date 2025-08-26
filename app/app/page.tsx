@@ -1,5 +1,6 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import './App.css';
 import { Team, Epic, Quarter, TSHIRT_SIZE_DAYS } from './types';
 import { calculateTeamCapacity } from './utils/capacityCalculations';
 import { TeamConfiguration } from './components/TeamConfiguration';
@@ -94,21 +95,28 @@ const DEFAULT_QUARTERS: Quarter[] = [
   },
 ];
 
-function App() {
-  const [team, setTeam] = useState<Team>(() => {
-    const savedTeam = localStorage.getItem('roadmapster-team');
-    return savedTeam ? JSON.parse(savedTeam) : DEFAULT_TEAM;
-  });
+export default function Home() {
+  const [team, setTeam] = useState<Team>(DEFAULT_TEAM);
+  const [epics, setEpics] = useState<Epic[]>(SAMPLE_EPICS);
+  const [quarters, setQuarters] = useState<Quarter[]>(DEFAULT_QUARTERS);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   
-  const [epics, setEpics] = useState<Epic[]>(() => {
-    const savedEpics = localStorage.getItem('roadmapster-epics');
-    return savedEpics ? JSON.parse(savedEpics) : SAMPLE_EPICS;
-  });
-  
-  const [quarters, setQuarters] = useState<Quarter[]>(() => {
-    const savedQuarters = localStorage.getItem('roadmapster-quarters');
-    return savedQuarters ? JSON.parse(savedQuarters) : DEFAULT_QUARTERS;
-  });
+  // Load data from localStorage after component mounts
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedTeam = localStorage.getItem('roadmapster-team');
+      const savedEpics = localStorage.getItem('roadmapster-epics');
+      const savedQuarters = localStorage.getItem('roadmapster-quarters');
+      
+      if (savedTeam) setTeam(JSON.parse(savedTeam));
+      if (savedEpics) setEpics(JSON.parse(savedEpics));
+      if (savedQuarters) setQuarters(JSON.parse(savedQuarters));
+      
+      setIsLoaded(true);
+      setIsHydrated(true);
+    }
+  }, []);
   
   const [isTeamConfigOpen, setIsTeamConfigOpen] = useState(false);
   const [isEpicFormOpen, setIsEpicFormOpen] = useState(false);
@@ -128,11 +136,14 @@ function App() {
     useSensor(KeyboardSensor)
   );
 
+  // Save to localStorage only after initial load
   useEffect(() => {
-    localStorage.setItem('roadmapster-team', JSON.stringify(team));
-    localStorage.setItem('roadmapster-epics', JSON.stringify(epics));
-    localStorage.setItem('roadmapster-quarters', JSON.stringify(quarters));
-  }, [team, epics, quarters]);
+    if (isLoaded && typeof window !== 'undefined') {
+      localStorage.setItem('roadmapster-team', JSON.stringify(team));
+      localStorage.setItem('roadmapster-epics', JSON.stringify(epics));
+      localStorage.setItem('roadmapster-quarters', JSON.stringify(quarters));
+    }
+  }, [team, epics, quarters, isLoaded]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -365,5 +376,3 @@ function App() {
     </div>
   );
 }
-
-export default App;

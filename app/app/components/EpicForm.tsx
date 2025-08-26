@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { Epic, TShirtSize, Priority } from '../types';
 import { X, Save } from 'lucide-react';

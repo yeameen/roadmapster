@@ -1,46 +1,143 @@
-# Getting Started with Create React App
+# Roadmapster - Visual Capacity Planning Tool
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A visual, Tetris-inspired capacity planning tool for software development teams. Built with Next.js, React, and TypeScript.
+
+## Tech Stack
+
+- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+- **Language**: TypeScript
+- **UI Library**: React 19
+- **Styling**: CSS Modules
+- **Drag & Drop**: @dnd-kit
+- **Icons**: Lucide React
+- **Date Utilities**: date-fns
+
+## Features
+
+- 📊 **Visual Capacity Planning**: Plan team capacity across quarters with intuitive drag-and-drop
+- 👥 **Team Management**: Configure team members, vacation days, and working capacity
+- 📝 **Epic Management**: Create, edit, and organize epics with T-shirt sizing
+- 📅 **Quarter Planning**: Manage multiple quarters with capacity visualization
+- 💾 **Data Persistence**: Automatic saving to browser localStorage
+- 📤 **Import/Export**: Export planning data to JSON for backup and sharing
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18.0 or later
+- npm or yarn package manager
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/roadmapster.git
+cd roadmapster/app
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Run the development server:
+```bash
+npm run dev
+```
+
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## Available Scripts
 
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### `npm run dev`
+Runs the app in development mode with hot-reload enabled.
 
 ### `npm run build`
+Builds the app for production in the `.next` folder.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### `npm run start`
+Runs the built app in production mode. Run `npm run build` first.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### `npm run lint`
+Runs the Next.js linter to check for code quality issues.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Project Structure
 
-### `npm run eject`
+```
+app/
+├── app/                    # Next.js app directory
+│   ├── components/        # React components
+│   │   ├── Backlog.tsx
+│   │   ├── EpicCard.tsx
+│   │   ├── EpicForm.tsx
+│   │   ├── QuarterForm.tsx
+│   │   ├── QuartersPanel.tsx
+│   │   ├── QuarterView.tsx
+│   │   └── TeamConfiguration.tsx
+│   ├── types/            # TypeScript type definitions
+│   ├── utils/            # Utility functions
+│   ├── layout.tsx        # Root layout
+│   ├── page.tsx          # Home page component
+│   ├── App.css           # Application styles
+│   └── index.css         # Global styles
+├── next.config.mjs       # Next.js configuration
+├── package.json          # Dependencies and scripts
+└── tsconfig.json         # TypeScript configuration
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## Usage Guide
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Team Configuration
+1. Click "Team Settings" to configure your team
+2. Add team members and set their vacation days
+3. Adjust buffer percentage for unknown work
+4. Set on-call days per sprint
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### Epic Management
+1. Click "Add Epic" to create new work items
+2. Set T-shirt size (XS, S, M, L, XL) for effort estimation
+3. Assign priority (P0-P3) for sorting
+4. Add description, owner, and required skills
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+### Quarter Planning
+1. Click "Create Quarter" to add planning periods
+2. Drag epics from backlog to quarters (Note: drag-and-drop has known issues)
+3. Monitor capacity utilization with visual indicators:
+   - Green: Under 75% capacity
+   - Yellow: 75-90% capacity
+   - Red: Over 90% capacity
 
-## Learn More
+### Data Management
+- **Export**: Click "Export" to download planning data as JSON
+- **Import**: Click "Import" to load previously exported data
+- **Auto-save**: All changes are automatically saved to browser localStorage
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Known Issues
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- **Drag and Drop**: The drag-and-drop functionality for moving epics between backlog and quarters is currently not working properly. Use the edit functionality as a workaround.
+- **Logo 404**: Missing logo192.png file causes a 404 error in the console (cosmetic issue only)
+
+## Development Notes
+
+This project was migrated from Create React App to Next.js. The migration provides:
+- Better performance with automatic code splitting
+- Server-side rendering capabilities
+- Built-in optimization features
+- Modern React 19 features support
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+
+For issues, questions, or suggestions, please open an issue in the GitHub repository.
