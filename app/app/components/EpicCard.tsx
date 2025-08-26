@@ -33,6 +33,7 @@ export const EpicCard: React.FC<EpicCardProps> = ({ epic, isDragging, onEdit, dr
       onClick={handleClick}
       {...(dragAttributes || {})}
       {...(dragListeners || {})}
+      suppressHydrationWarning={true}
     >
       <div className="epic-card-header">
         <div 

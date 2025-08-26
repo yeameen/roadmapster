@@ -40,7 +40,7 @@ const SortableEpic: React.FC<SortableEpicProps> = ({ epic, onEdit }) => {
   };
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div ref={setNodeRef} style={style} suppressHydrationWarning={true}>
       <EpicCard 
         epic={epic} 
         isDragging={isDragging} 

@@ -44,7 +44,7 @@ const SortableQuarterEpic: React.FC<SortableQuarterEpicProps> = ({ epic, onEdit 
   };
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div ref={setNodeRef} style={style} suppressHydrationWarning={true}>
       <EpicCard 
         epic={epic} 
         isDragging={isDragging} 
