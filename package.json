@@ -26,7 +26,18 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:trace": "playwright show-trace",
+    "test:e2e:chrome": "playwright test --project='Desktop Chrome'",
+    "test:e2e:firefox": "playwright test --project='Desktop Firefox'",
+    "test:e2e:mobile": "playwright test --project='Mobile Chrome' --project='Mobile Safari'",
+    "test:e2e:capacity": "playwright test tests/e2e/capacity-planning",
+    "test:e2e:team": "playwright test tests/e2e/team-management"
   },
   "eslintConfig": {
     "extends": [
@@ -47,6 +58,8 @@
     ]
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "playwright": "^1.55.0",
     "puppeteer": "^24.17.0"
   }
 }
