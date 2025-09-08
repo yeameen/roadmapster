@@ -17,15 +17,8 @@ export class TeamService {
       return null;
     }
 
-    const { data: membersData, error: membersError } = await this.supabase
-      .from('team_members')
-      .select('*, user_profiles(*)')
-      .eq('team_id', teamId);
-
-    if (membersError) {
-      console.error('Error fetching team members:', membersError);
-      return null;
-    }
+    // Get members from settings (MVP approach - no need for separate query)
+    const members = teamData.settings?.members || [];
 
     // Transform database format to app format
     const team: Team = {
@@ -35,12 +28,12 @@ export class TeamService {
       bufferPercentage: teamData.settings?.bufferPercentage || 0.2,
       oncallPerSprint: teamData.settings?.oncallPerSprint || 1,
       sprintsInQuarter: teamData.settings?.sprintsPerQuarter || 6,
-      members: membersData?.map((member: any) => ({
-        id: member.user_id,
-        name: member.user_profiles?.full_name || member.user_profiles?.email || 'Unknown',
-        vacationDays: member.vacation_days || 0,
+      members: members.map((member: any) => ({
+        id: member.id,
+        name: member.name,
+        vacationDays: member.vacationDays || 0,
         skills: member.skills || []
-      })) || []
+      }))
     };
 
     return team;
@@ -82,7 +75,12 @@ export class TeamService {
       bufferPercentage: teamData.settings?.bufferPercentage || 0.2,
       oncallPerSprint: teamData.settings?.oncallPerSprint || 1,
       sprintsInQuarter: teamData.settings?.sprintsInQuarter || 6,
-      members: [] // We'll load members separately if needed
+      members: teamData.settings?.members?.map((member: any) => ({
+        id: member.id,
+        name: member.name,
+        vacationDays: member.vacationDays || 0,
+        skills: member.skills || []
+      })) || []
     }));
 
     return teams;
@@ -110,6 +108,14 @@ export class TeamService {
     
     console.log('User organization_id:', userData.organization_id);
 
+    // Prepare members data for storage in settings
+    const membersData = team.members ? team.members.map(member => ({
+      id: member.id,
+      name: member.name,
+      vacationDays: member.vacationDays || 0,
+      skills: member.skills || []
+    })) : [];
+
     // Create the team
     const { data: teamData, error: teamError } = await this.supabase
       .from('teams')
@@ -120,7 +126,8 @@ export class TeamService {
           bufferPercentage: team.bufferPercentage,
           oncallPerSprint: team.oncallPerSprint,
           sprintsPerQuarter: team.sprintsInQuarter,
-          defaultWorkingDays: team.quarterWorkingDays
+          defaultWorkingDays: team.quarterWorkingDays,
+          members: membersData
         },
         created_by: userId
       })
@@ -149,7 +156,9 @@ export class TeamService {
       });
 
     if (memberError) {
-      console.error('Error adding team owner:', memberError);
+      console.error('Error adding team owner:', JSON.stringify(memberError, null, 2));
+      console.error('Team ID:', teamData.id);
+      console.error('User ID:', userId);
       // Rollback team creation
       await this.supabase.from('teams').delete().eq('id', teamData.id);
       return null;
@@ -185,6 +194,41 @@ export class TeamService {
     if (error) {
       console.error('Error updating team:', error);
       return null;
+    }
+
+    // Handle team members update if provided
+    // For MVP, we store members as part of team settings
+    if (updates.members) {
+      const membersData = updates.members.map(member => ({
+        id: member.id,
+        name: member.name,
+        vacationDays: member.vacationDays || 0,
+        skills: member.skills || []
+      }));
+
+      // Get current settings to merge
+      const { data: currentTeam } = await this.supabase
+        .from('teams')
+        .select('settings')
+        .eq('id', teamId)
+        .single();
+
+      const mergedSettings = {
+        ...(currentTeam?.settings || {}),
+        ...(updateData.settings || {}),
+        members: membersData
+      };
+
+      const { error: memberUpdateError } = await this.supabase
+        .from('teams')
+        .update({
+          settings: mergedSettings
+        })
+        .eq('id', teamId);
+
+      if (memberUpdateError) {
+        console.error('Error updating team members:', memberUpdateError);
+      }
     }
 
     return this.getTeam(teamId);
