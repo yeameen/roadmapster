@@ -38,7 +38,7 @@ const DEFAULT_TEAM: Team = {
 
 const SAMPLE_EPICS: Epic[] = [
   {
-    id: '1',
+    id: 'epic-1',
     title: 'User Authentication System',
     size: 'L',
     priority: 'P0',
@@ -47,7 +47,7 @@ const SAMPLE_EPICS: Epic[] = [
     requiredSkills: ['React', 'Node.js', 'OAuth'],
   },
   {
-    id: '2',
+    id: 'epic-2',
     title: 'Dashboard Analytics',
     size: 'M',
     priority: 'P1',
@@ -56,7 +56,7 @@ const SAMPLE_EPICS: Epic[] = [
     requiredSkills: ['React', 'D3.js'],
   },
   {
-    id: '3',
+    id: 'epic-3',
     title: 'API Rate Limiting',
     size: 'S',
     priority: 'P1',
@@ -65,7 +65,7 @@ const SAMPLE_EPICS: Epic[] = [
     requiredSkills: ['Node.js', 'Redis'],
   },
   {
-    id: '4',
+    id: 'epic-4',
     title: 'Mobile Responsive Design',
     size: 'M',
     priority: 'P2',
@@ -74,7 +74,7 @@ const SAMPLE_EPICS: Epic[] = [
     requiredSkills: ['CSS', 'React'],
   },
   {
-    id: '5',
+    id: 'epic-5',
     title: 'Performance Optimization',
     size: 'XS',
     priority: 'P2',
@@ -166,39 +166,65 @@ export default function Home() {
     }
 
     console.log('Processing drop on:', over.id);
-    // Check if dropping on a quarter
-    if (over.id.toString().startsWith('quarter-')) {
-      const quarterId = over.id.toString().replace('quarter-', '');
-      console.log('Extracted quarterId:', quarterId);
-      console.log('Looking for quarter with this ID in:', quarters);
-      const quarter = quarters.find(q => q.id === quarterId);
-      console.log('Found quarter:', quarter);
-      
-      if (quarter) {
-        // Check capacity before adding
-        const quarterEpics = epics.filter(e => e.quarterId === quarterId);
-        const capacity = calculateTeamCapacity(team, quarterEpics);
-        const epicSize = TSHIRT_SIZE_DAYS[draggedEpic.size];
-        
-        if (capacity.remainingCapacity >= epicSize) {
-          // Update epic with new quarter assignment
-          const maxPosition = Math.max(...quarterEpics.map(e => e.position || 0), 0);
-          setEpics(epics.map(e => 
-            e.id === draggedEpic.id 
-              ? { ...e, status: 'planned', quarterId: quarterId, position: maxPosition + 1 }
-              : e
-          ));
-        } else {
-          alert('Not enough capacity in this quarter');
-        }
-      }
-    } else if (over.id === 'backlog') {
+    
+    // Check if dropping on backlog first
+    if (over.id === 'backlog') {
       // Moving back to backlog
       setEpics(epics.map(e => 
         e.id === draggedEpic.id 
           ? { ...e, status: 'backlog', quarterId: undefined, position: undefined }
           : e
       ));
+      setActiveId(null);
+      return;
+    }
+    
+    // Check if dropping on a quarter
+    const overIdStr = over.id.toString();
+    let quarter = null;
+    let quarterId = null;
+    
+    // First check if it's explicitly a quarter droppable (prefixed with 'quarter-')
+    if (overIdStr.startsWith('quarter-')) {
+      quarterId = overIdStr.replace('quarter-', '');
+      quarter = quarters.find(q => q.id === quarterId);
+      console.log('Found quarter droppable, ID:', quarterId);
+    } 
+    // Otherwise, check if the ID matches a quarter ID (but not an epic ID)
+    else {
+      // Make sure it's not an epic ID
+      const isEpicId = epics.some(e => e.id === overIdStr);
+      if (!isEpicId) {
+        quarter = quarters.find(q => q.id === overIdStr);
+        if (quarter) {
+          quarterId = quarter.id;
+          console.log('Found quarter by direct ID match:', quarterId);
+        }
+      } else {
+        console.log('Dropped on epic with ID:', overIdStr);
+      }
+    }
+    
+    if (quarter) {
+      console.log('Found quarter:', quarter.name);
+      // Check capacity before adding
+      const quarterEpics = epics.filter(e => e.quarterId === quarterId);
+      const capacity = calculateTeamCapacity(team, quarterEpics);
+      const epicSize = TSHIRT_SIZE_DAYS[draggedEpic.size];
+      
+      if (capacity.remainingCapacity >= epicSize) {
+        // Update epic with new quarter assignment
+        const maxPosition = Math.max(...quarterEpics.map(e => e.position || 0), 0);
+        setEpics(epics.map(e => 
+          e.id === draggedEpic.id 
+            ? { ...e, status: 'planned', quarterId: quarterId, position: maxPosition + 1 }
+            : e
+        ));
+      } else {
+        alert('Not enough capacity in this quarter');
+      }
+    } else {
+      console.log('No valid drop target found for ID:', over.id);
     }
     
     setActiveId(null);
