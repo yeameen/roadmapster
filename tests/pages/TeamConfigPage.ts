@@ -10,7 +10,6 @@ export class TeamConfigPage extends BasePage {
   private readonly memberRows: Locator;
   private readonly oncallInput: Locator;
   private readonly bufferInput: Locator;
-  private readonly sprintsInput: Locator;
   private readonly saveButton: Locator;
   private readonly closeButton: Locator;
   private readonly exportButton: Locator;
@@ -25,9 +24,8 @@ export class TeamConfigPage extends BasePage {
     this.addMemberButton = this.teamModal.getByRole('button', { name: /add member/i });
     this.addMemberNameInput = this.teamModal.locator('.add-member input[type="text"]');
     this.memberRows = page.locator('.member-item');
-    this.oncallInput = page.getByTestId('oncall-per-sprint-input');
+    this.oncallInput = page.getByTestId('oncall-overhead-input');
     this.bufferInput = page.getByTestId('buffer-percentage-input');
-    this.sprintsInput = page.getByTestId('sprints-in-quarter-input');
     this.saveButton = this.teamModal.getByRole('button', { name: /save configuration|save/i });
     this.closeButton = this.teamModal.getByRole('button', { name: /cancel|close/i });
     this.exportButton = page.getByRole('button', { name: /export/i });
@@ -103,11 +101,11 @@ export class TeamConfigPage extends BasePage {
   }
 
   /**
-   * Set oncall rotation days
+   * Set oncall overhead (persons)
    */
-  async setOncallRotation(days: number) {
+  async setOncallRotation(persons: number) {
     await this.oncallInput.clear();
-    await this.oncallInput.fill(days.toString());
+    await this.oncallInput.fill(persons.toString());
   }
 
   /**
@@ -229,30 +227,35 @@ export class TeamConfigPage extends BasePage {
    */
   async getTeamCapacity(workingDays: number = 65) {
     // Ensure modal is open to read current values
-    if (!(await this.teamModal.isVisible())) {
+    const wasOpen = await this.teamModal.isVisible();
+    if (!wasOpen) {
       await this.openTeamConfig();
     }
     const members = await this.getTeamMembers();
     const oncallPerSprint = parseInt(await this.oncallInput.inputValue()) || 0;
-    const sprints = parseInt(await this.sprintsInput.inputValue()) || 6;
+    const sprints = 6; // Default sprints per quarter
     const bufferPercentage = parseInt(await this.bufferInput.inputValue()) || 20;
 
-    const individualCapacities = members.map(m => workingDays - (m.vacationDays || 0));
-    const totalTeamCapacity = individualCapacities.reduce((a, b) => a + b, 0);
-    const oncallDays = sprints * oncallPerSprint * 10;
-    const capacityAfterOncall = totalTeamCapacity - oncallDays;
+    // Base capacity is members * working days (before vacation deduction)
+    const baseCapacity = members.length * workingDays;
+    const totalVacationDays = members.reduce((sum, m) => sum + (m.vacationDays || 0), 0);
+    const capacityAfterVacation = baseCapacity - totalVacationDays;
+    const oncallDays = Math.min(capacityAfterVacation, sprints * oncallPerSprint * 10);
+    const capacityAfterOncall = Math.max(0, capacityAfterVacation - oncallDays);
     const bufferDays = Math.round(capacityAfterOncall * (bufferPercentage / 100));
-    const availableCapacity = capacityAfterOncall - bufferDays;
+    const availableCapacity = Math.max(0, capacityAfterOncall - bufferDays);
 
     const result = {
-      baseCapacity: totalTeamCapacity,
-      vacationDays: members.reduce((sum, m) => sum + (m.vacationDays || 0), 0),
+      baseCapacity,
+      vacationDays: totalVacationDays,
       oncallDays,
       bufferDays,
       availableCapacity: Math.round(availableCapacity)
     };
-    // Close modal to leave UI as-is
-    await this.closeTeamConfig();
+    // Only close if it wasn't open before
+    if (!wasOpen) {
+      await this.closeTeamConfig();
+    }
     return result;
   }
 }

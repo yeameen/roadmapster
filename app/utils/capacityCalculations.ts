@@ -13,10 +13,13 @@ export function calculateTeamCapacity(team: Team, epics: Epic[]): CapacityCalcul
     0
   );
 
-  // Calculate oncall deduction (cap at total capacity to prevent negative)
+  // Calculate oncall deduction (oncall overhead in person-days)
+  // oncallPerSprint is the number of persons on oncall
+  // We assume 10 days impact per person on oncall, and 6 sprints per quarter
+  const sprintsPerQuarter = team.sprintsInQuarter || 6;
   const oncallDeduction = Math.min(
     totalTeamCapacity,
-    team.sprintsInQuarter * team.oncallPerSprint * 10 // 10 days per oncall person
+    team.oncallPerSprint * 10 * sprintsPerQuarter
   );
 
   // Capacity after oncall (ensure non-negative)

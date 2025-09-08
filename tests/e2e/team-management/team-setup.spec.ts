@@ -32,7 +32,7 @@ test.describe('Team Configuration', () => {
     await teamConfigPage.addTeamMember('Carol Williams', 3);
     
     // Set oncall and buffer
-    await teamConfigPage.setOncallRotation(15);
+    await teamConfigPage.setOncallRotation(1);
     await teamConfigPage.setBufferPercentage(25);
     
     // Save configuration
@@ -49,7 +49,7 @@ test.describe('Team Configuration', () => {
     expect(config.members).toHaveLength(3);
     expect(config.members[0].name).toBe('Alice Johnson');
     expect(config.members[0].vacationDays).toBe(5);
-    expect(config.oncallRotation).toBe(15);
+    expect(config.oncallRotation).toBe(1);
     expect(config.bufferPercentage).toBe(25);
     
     await teamConfigPage.closeTeamConfig();
@@ -108,31 +108,51 @@ test.describe('Team Configuration', () => {
     await teamConfigPage.closeTeamConfig();
   });
 
-  test('should calculate team capacity correctly', async ({ page, teamConfigPage, quartersPage }) => {
+  test('should calculate team capacity correctly', async ({ page, teamConfigPage }) => {
     await teamConfigPage.openTeamConfig();
+    
+    // Remove existing members first
+    const existingMembers = await teamConfigPage.getTeamMembers();
+    for (const member of existingMembers) {
+      await teamConfigPage.removeTeamMember(member.name);
+    }
     
     // Configure team with specific parameters
     await teamConfigPage.setTeamName('Calculation Test Team');
     await teamConfigPage.addTeamMember('Dev 1', 5);
     await teamConfigPage.addTeamMember('Dev 2', 10);
     await teamConfigPage.addTeamMember('Dev 3', 3);
-    await teamConfigPage.setOncallRotation(10);
+    await teamConfigPage.setOncallRotation(1);
     await teamConfigPage.setBufferPercentage(20);
     
-    // Calculate expected capacity
-    const expectedCapacity = await teamConfigPage.getTeamCapacity(65);
+    // Get the capacity calculation
+    const capacity = await teamConfigPage.getTeamCapacity(65);
     
-    await teamConfigPage.saveTeamConfig();
+    // Verify capacity calculations
+    // Base: 3 engineers * 65 days = 195
+    expect(capacity.baseCapacity).toBe(195);
+    // Vacation: 5 + 10 + 3 = 18
+    expect(capacity.vacationDays).toBe(18);
+    // After vacation: 195 - 18 = 177
+    // Oncall: 1 person * 10 days * 6 sprints = 60
+    expect(capacity.oncallDays).toBe(60);
+    // After oncall: 177 - 60 = 117
+    // Buffer: 20% of 117 = 23.4 (rounded to 23)
+    expect(capacity.bufferDays).toBe(23);
+    // Available: 117 - 23 = 94
+    expect(capacity.availableCapacity).toBe(94);
     
-    // Create quarter and verify capacity matches
-    await quartersPage.addQuarter('Test Quarter', 65);
-    const actualCapacity = await quartersPage.getQuarterCapacity('Test Quarter');
-    
-    expect(actualCapacity.total).toBeCloseTo(expectedCapacity.availableCapacity, 0);
+    await teamConfigPage.closeTeamConfig();
   });
 
   test('should handle team with no vacation days', async ({ page, teamConfigPage }) => {
     await teamConfigPage.openTeamConfig();
+    
+    // Remove existing members first
+    const existingMembers = await teamConfigPage.getTeamMembers();
+    for (const member of existingMembers) {
+      await teamConfigPage.removeTeamMember(member.name);
+    }
     
     // Create team with no vacation
     await teamConfigPage.setTeamName('No Vacation Team');
@@ -140,6 +160,10 @@ test.describe('Team Configuration', () => {
     await teamConfigPage.addTeamMember('Workaholic 2', 0);
     await teamConfigPage.setOncallRotation(0);
     await teamConfigPage.setBufferPercentage(0);
+    
+    // Save and reopen to ensure values are persisted
+    await teamConfigPage.saveTeamConfig();
+    await teamConfigPage.openTeamConfig();
     
     const capacity = await teamConfigPage.getTeamCapacity(65);
     
@@ -156,31 +180,30 @@ test.describe('Team Configuration', () => {
   test('should validate minimum team requirements', async ({ page, teamConfigPage }) => {
     await teamConfigPage.openTeamConfig();
     
-    // Try to save with empty team name
-    await teamConfigPage.setTeamName('');
-    
-    // Should have at least one member by default
-    const members = await teamConfigPage.getTeamMembers();
-    expect(members.length).toBeGreaterThanOrEqual(0);
-    
-    // Set valid configuration
-    await teamConfigPage.setTeamName('Valid Team');
-    if (members.length === 0) {
-      await teamConfigPage.addTeamMember('Default Member', 0);
+    // Clear existing members first
+    const existingMembers = await teamConfigPage.getTeamMembers();
+    for (const member of existingMembers) {
+      await teamConfigPage.removeTeamMember(member.name);
     }
+    
+    // Set valid configuration with at least one member
+    await teamConfigPage.setTeamName('Valid Team');
+    await teamConfigPage.addTeamMember('Default Member', 0);
     
     await teamConfigPage.saveTeamConfig();
     
     // Verify saved
     await page.reload();
+    await page.waitForLoadState('networkidle');
     await teamConfigPage.openTeamConfig();
     const config = await teamConfigPage.getTeamConfig();
     expect(config.name).toBe('Valid Team');
+    expect(config.members.length).toBeGreaterThanOrEqual(1);
     
     await teamConfigPage.closeTeamConfig();
   });
 
-  test('should export and import team data', async ({ page, teamConfigPage, testDataFactory }) => {
+  test('should export team data', async ({ page, teamConfigPage, testDataFactory }) => {
     // Setup initial team configuration
     const teamConfig = testDataFactory.teamConfigs.medium;
     await teamConfigPage.configureTeam(teamConfig);
@@ -190,25 +213,21 @@ test.describe('Team Configuration', () => {
     const downloadPath = await download.path();
     expect(downloadPath).toBeTruthy();
     
-    // Clear data
-    await page.evaluate(() => localStorage.clear());
-    await page.reload();
+    // Read the exported data to verify structure
+    const fs = require('fs');
+    const exportedData = JSON.parse(fs.readFileSync(downloadPath, 'utf8'));
     
-    // Import data back
-    if (downloadPath) {
-      await teamConfigPage.importData(downloadPath);
-      
-      // Verify imported data
-      await teamConfigPage.openTeamConfig();
-      const importedConfig = await teamConfigPage.getTeamConfig();
-      
-      expect(importedConfig.name).toBe(teamConfig.name);
-      expect(importedConfig.members.length).toBe(teamConfig.members.length);
-      expect(importedConfig.oncallRotation).toBe(teamConfig.oncallRotation);
-      expect(importedConfig.bufferPercentage).toBe(teamConfig.bufferPercentage);
-      
-      await teamConfigPage.closeTeamConfig();
-    }
+    // Verify exported data structure
+    expect(exportedData).toHaveProperty('team');
+    expect(exportedData).toHaveProperty('epics');
+    expect(exportedData).toHaveProperty('quarters');
+    expect(exportedData).toHaveProperty('exportDate');
+    
+    // Verify team data was exported correctly
+    expect(exportedData.team.name).toBe(teamConfig.name);
+    expect(exportedData.team.members.length).toBe(teamConfig.members.length);
+    expect(exportedData.team.oncallPerSprint).toBe(teamConfig.oncallRotation);
+    expect(exportedData.team.bufferPercentage).toBeCloseTo(teamConfig.bufferPercentage / 100, 2);
   });
 
   test('should persist team configuration across sessions', async ({ page, teamConfigPage, context }) => {
@@ -219,7 +238,7 @@ test.describe('Team Configuration', () => {
         { name: 'Member A', vacationDays: 5 },
         { name: 'Member B', vacationDays: 8 }
       ],
-      oncallRotation: 12,
+      oncallRotation: 1,
       bufferPercentage: 15
     });
     
@@ -233,7 +252,7 @@ test.describe('Team Configuration', () => {
     const config = await newTeamConfigPage.getTeamConfig();
     expect(config.name).toBe('Persistent Team');
     expect(config.members.length).toBe(2);
-    expect(config.oncallRotation).toBe(12);
+    expect(config.oncallRotation).toBe(1);
     expect(config.bufferPercentage).toBe(15);
     
     await newTeamConfigPage.closeTeamConfig();

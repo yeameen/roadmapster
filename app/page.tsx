@@ -26,7 +26,7 @@ const DEFAULT_TEAM: Team = {
   name: 'Engineering Team',
   quarterWorkingDays: 65,
   bufferPercentage: 0.2,
-  oncallPerSprint: 1,
+  oncallPerSprint: 1, // 1 person on oncall
   sprintsInQuarter: 6,
   members: [
     { id: '1', name: 'Alice', vacationDays: 5, skills: [] },

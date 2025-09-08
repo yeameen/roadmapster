@@ -81,31 +81,16 @@ export const TeamConfiguration: React.FC<TeamConfigurationProps> = ({
 
         <div className="modal-body">
           <div className="config-section">
-            <h3>Quarter Settings</h3>
+            <h3>Team Settings</h3>
             <div className="form-group">
-              <label htmlFor="team-name">Quarter</label>
+              <label htmlFor="team-name">Team Name</label>
               <input
                 id="team-name"
                 data-testid="team-name-input"
                 type="text"
                 value={editedTeam.name}
                 onChange={(e) => setEditedTeam({ ...editedTeam, name: e.target.value })}
-                placeholder="Q2 2025"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="working-days">Working Days This Quarter</label>
-              <input
-                id="working-days"
-                data-testid="working-days-input"
-                type="number"
-                value={editedTeam.quarterWorkingDays}
-                onChange={(e) =>
-                  setEditedTeam({
-                    ...editedTeam,
-                    quarterWorkingDays: parseInt(e.target.value) || 65,
-                  })
-                }
+                placeholder="Engineering Team"
               />
             </div>
             <div className="form-group">
@@ -118,7 +103,7 @@ export const TeamConfiguration: React.FC<TeamConfigurationProps> = ({
                 onChange={(e) =>
                   setEditedTeam({
                     ...editedTeam,
-                    bufferPercentage: (parseInt(e.target.value) || 20) / 100,
+                    bufferPercentage: (parseInt(e.target.value) || 0) / 100,
                   })
                 }
                 min="0"
@@ -127,37 +112,22 @@ export const TeamConfiguration: React.FC<TeamConfigurationProps> = ({
               <span className="input-suffix">%</span>
             </div>
             <div className="form-group">
-              <label htmlFor="oncall-per-sprint">Oncall per Sprint</label>
+              <label htmlFor="oncall-overhead">Oncall Overhead</label>
               <input
-                id="oncall-per-sprint"
-                data-testid="oncall-per-sprint-input"
+                id="oncall-overhead"
+                data-testid="oncall-overhead-input"
                 type="number"
                 value={editedTeam.oncallPerSprint}
                 onChange={(e) =>
                   setEditedTeam({
                     ...editedTeam,
-                    oncallPerSprint: parseInt(e.target.value) || 1,
+                    oncallPerSprint: parseInt(e.target.value) || 0,
                   })
                 }
                 min="0"
+                max="10"
               />
               <span className="input-suffix">person(s)</span>
-            </div>
-            <div className="form-group">
-              <label htmlFor="sprints-in-quarter">Sprints in Quarter</label>
-              <input
-                id="sprints-in-quarter"
-                data-testid="sprints-in-quarter-input"
-                type="number"
-                value={editedTeam.sprintsInQuarter}
-                onChange={(e) =>
-                  setEditedTeam({
-                    ...editedTeam,
-                    sprintsInQuarter: parseInt(e.target.value) || 6,
-                  })
-                }
-                min="1"
-              />
             </div>
           </div>
 

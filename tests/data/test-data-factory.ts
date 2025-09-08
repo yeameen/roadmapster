@@ -62,7 +62,7 @@ export const testData = {
       id,
       name: `Team ${id.substr(-6)}`,
       members,
-      oncallRotation: 10,
+      oncallRotation: 1,
       bufferPercentage: 20,
       ...overrides
     };
@@ -110,7 +110,7 @@ export const testData = {
         { name: 'Developer 1', vacationDays: 5 },
         { name: 'Developer 2', vacationDays: 3 }
       ],
-      oncallRotation: 5,
+      oncallRotation: 1,
       bufferPercentage: 20
     },
     
@@ -123,7 +123,7 @@ export const testData = {
         { name: 'Mid Dev 2', vacationDays: 8 },
         { name: 'Junior Dev', vacationDays: 3 }
       ],
-      oncallRotation: 10,
+      oncallRotation: 1,
       bufferPercentage: 20
     },
     
@@ -133,7 +133,7 @@ export const testData = {
         name: `Developer ${i + 1}`,
         vacationDays: Math.floor(Math.random() * 10) + 3
       })),
-      oncallRotation: 15,
+      oncallRotation: 2,
       bufferPercentage: 25
     }
   },
@@ -163,15 +163,19 @@ export const testData = {
   calculateExpectedCapacity: (team: Team, workingDays: number = 65) => {
     const totalVacationDays = team.members.reduce((sum, m) => sum + m.vacationDays, 0);
     const baseCapacity = team.members.length * workingDays;
-    const oncallDays = team.oncallRotation * (workingDays / 65);
-    const bufferDays = (baseCapacity - totalVacationDays - oncallDays) * (team.bufferPercentage / 100);
+    const sprintsPerQuarter = 6;
+    const oncallDays = Math.min(baseCapacity, team.oncallRotation * 10 * sprintsPerQuarter);
+    const capacityAfterVacation = baseCapacity - totalVacationDays;
+    const capacityAfterOncall = Math.max(0, capacityAfterVacation - oncallDays);
+    const bufferDays = Math.round(capacityAfterOncall * (team.bufferPercentage / 100));
+    const availableCapacity = Math.max(0, capacityAfterOncall - bufferDays);
     
     return {
       baseCapacity,
       vacationDays: totalVacationDays,
       oncallDays,
-      bufferDays: Math.round(bufferDays),
-      availableCapacity: Math.round(baseCapacity - totalVacationDays - oncallDays - bufferDays)
+      bufferDays,
+      availableCapacity
     };
   },
 

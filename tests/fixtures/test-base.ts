@@ -47,13 +47,15 @@ export const test = base.extend<TestFixtures>({
       const defaultTeam = {
         id: 'test-team-1',
         name: 'Test Engineering Team',
+        quarterWorkingDays: 65,
+        bufferPercentage: 0.2,
+        oncallPerSprint: 1,
+        sprintsInQuarter: 6,
         members: [
-          { name: 'Alice Johnson', vacationDays: 5 },
-          { name: 'Bob Smith', vacationDays: 3 },
-          { name: 'Carol Davis', vacationDays: 7 }
-        ],
-        oncallRotation: 10,
-        bufferPercentage: 20
+          { id: '1', name: 'Alice Johnson', vacationDays: 5, skills: [] },
+          { id: '2', name: 'Bob Smith', vacationDays: 3, skills: [] },
+          { id: '3', name: 'Carol Davis', vacationDays: 7, skills: [] }
+        ]
       };
       localStorage.setItem('roadmapster-team', JSON.stringify(defaultTeam));
     });
