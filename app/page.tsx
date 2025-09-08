@@ -8,7 +8,7 @@ import { Backlog } from './components/Backlog';
 import { QuartersPanel } from './components/QuartersPanel';
 import { QuarterForm } from './components/QuarterForm';
 import { EpicForm } from './components/EpicForm';
-import { Settings, Download, Upload } from 'lucide-react';
+import { Settings, Download, Upload, LogOut, User } from 'lucide-react';
 import {
   DndContext,
   DragEndEvent,
@@ -20,6 +20,10 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { EpicCard } from './components/EpicCard';
+import { useSupabaseAuth } from './hooks/useSupabaseAuth';
+import { useTeams } from './hooks/useTeams';
+import { useEpics } from './hooks/useEpics';
+import { useQuarters } from './hooks/useQuarters';
 
 const DEFAULT_TEAM: Team = {
   id: '1',
@@ -96,27 +100,21 @@ const DEFAULT_QUARTERS: Quarter[] = [
 ];
 
 export default function Home() {
-  const [team, setTeam] = useState<Team>(DEFAULT_TEAM);
-  const [epics, setEpics] = useState<Epic[]>(SAMPLE_EPICS);
-  const [quarters, setQuarters] = useState<Quarter[]>(DEFAULT_QUARTERS);
-  const [isHydrated, setIsHydrated] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const { user, signOut } = useSupabaseAuth();
   
-  // Load data from localStorage after component mounts
+  // Use Supabase hooks for data persistence
+  const { selectedTeam: team, loading: teamLoading, error: teamError, createTeam, updateTeam } = useTeams();
+  const { epics, loading: epicsLoading, error: epicsError, createEpic, updateEpic, deleteEpic } = useEpics(team?.id || null);
+  const { quarters, loading: quartersLoading, error: quartersError, createQuarter, updateQuarter, deleteQuarter } = useQuarters(team?.id || null);
+  
+  const [isHydrated, setIsHydrated] = useState(false);
+  
+  // Set hydrated state when all data is loaded
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedTeam = localStorage.getItem('roadmapster-team');
-      const savedEpics = localStorage.getItem('roadmapster-epics');
-      const savedQuarters = localStorage.getItem('roadmapster-quarters');
-      
-      if (savedTeam) setTeam(JSON.parse(savedTeam));
-      if (savedEpics) setEpics(JSON.parse(savedEpics));
-      if (savedQuarters) setQuarters(JSON.parse(savedQuarters));
-      
-      setIsLoaded(true);
+    if (!teamLoading && !epicsLoading && !quartersLoading) {
       setIsHydrated(true);
     }
-  }, []);
+  }, [teamLoading, epicsLoading, quartersLoading]);
   
   const [isTeamConfigOpen, setIsTeamConfigOpen] = useState(false);
   const [isEpicFormOpen, setIsEpicFormOpen] = useState(false);
@@ -134,14 +132,7 @@ export default function Home() {
     useSensor(KeyboardSensor)
   );
 
-  // Save to localStorage only after initial load
-  useEffect(() => {
-    if (isLoaded && typeof window !== 'undefined') {
-      localStorage.setItem('roadmapster-team', JSON.stringify(team));
-      localStorage.setItem('roadmapster-epics', JSON.stringify(epics));
-      localStorage.setItem('roadmapster-quarters', JSON.stringify(quarters));
-    }
-  }, [team, epics, quarters, isLoaded]);
+  // Note: Data is now automatically persisted to Supabase through the hooks
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -159,7 +150,7 @@ export default function Home() {
       return;
     }
     
-    const draggedEpic = epics.find(e => e.id === active.id);
+    const draggedEpic = (epics || []).find(e => e.id === active.id);
     if (!draggedEpic) {
       console.log('Dragged epic not found:', active.id);
       return;
@@ -170,11 +161,11 @@ export default function Home() {
     // Check if dropping on backlog first
     if (over.id === 'backlog') {
       // Moving back to backlog
-      setEpics(epics.map(e => 
-        e.id === draggedEpic.id 
-          ? { ...e, status: 'backlog', quarterId: undefined, position: undefined }
-          : e
-      ));
+      updateEpic(draggedEpic.id, { 
+        status: 'backlog', 
+        quarterId: undefined, 
+        position: undefined 
+      });
       setActiveId(null);
       return;
     }
@@ -182,20 +173,20 @@ export default function Home() {
     // Check if dropping on a quarter
     const overIdStr = over.id.toString();
     let quarter = null;
-    let quarterId = null;
+    let quarterId: string | null = null;
     
     // First check if it's explicitly a quarter droppable (prefixed with 'quarter-')
     if (overIdStr.startsWith('quarter-')) {
       quarterId = overIdStr.replace('quarter-', '');
-      quarter = quarters.find(q => q.id === quarterId);
+      quarter = (quarters || []).find(q => q.id === quarterId);
       console.log('Found quarter droppable, ID:', quarterId);
     } 
     // Otherwise, check if the ID matches a quarter ID (but not an epic ID)
     else {
       // Make sure it's not an epic ID
-      const isEpicId = epics.some(e => e.id === overIdStr);
+      const isEpicId = (epics || []).some(e => e.id === overIdStr);
       if (!isEpicId) {
-        quarter = quarters.find(q => q.id === overIdStr);
+        quarter = (quarters || []).find(q => q.id === overIdStr);
         if (quarter) {
           quarterId = quarter.id;
           console.log('Found quarter by direct ID match:', quarterId);
@@ -208,18 +199,18 @@ export default function Home() {
     if (quarter) {
       console.log('Found quarter:', quarter.name);
       // Check capacity before adding
-      const quarterEpics = epics.filter(e => e.quarterId === quarterId);
-      const capacity = calculateTeamCapacity(team, quarterEpics);
+      const quarterEpics = (epics || []).filter(e => e.quarterId === quarterId);
+      const capacity = calculateTeamCapacity(team!, quarterEpics);
       const epicSize = TSHIRT_SIZE_DAYS[draggedEpic.size];
       
       if (capacity.remainingCapacity >= epicSize) {
         // Update epic with new quarter assignment
         const maxPosition = Math.max(...quarterEpics.map(e => e.position || 0), 0);
-        setEpics(epics.map(e => 
-          e.id === draggedEpic.id 
-            ? { ...e, status: 'planned', quarterId: quarterId, position: maxPosition + 1 }
-            : e
-        ));
+        updateEpic(draggedEpic.id, { 
+          status: 'planned', 
+          quarterId: quarterId || undefined, 
+          position: maxPosition + 1 
+        });
       } else {
         alert('Not enough capacity in this quarter');
       }
@@ -244,11 +235,11 @@ export default function Home() {
     setIsEpicFormOpen(true);
   };
 
-  const handleSaveEpic = (epic: Epic) => {
+  const handleSaveEpic = async (epic: Epic) => {
     if (editingEpic) {
-      setEpics(epics.map(e => e.id === epic.id ? epic : e));
+      await updateEpic(epic.id, epic);
     } else {
-      setEpics([...epics, epic]);
+      await createEpic(epic);
     }
     setIsEpicFormOpen(false);
     setEditingEpic(undefined);
@@ -259,28 +250,29 @@ export default function Home() {
     setIsQuarterFormOpen(true);
   };
 
-  const handleSaveQuarter = (quarter: Quarter) => {
+  const handleSaveQuarter = async (quarter: Quarter) => {
     if (editingQuarter) {
-      setQuarters(quarters.map(q => q.id === quarter.id ? quarter : q));
+      await updateQuarter(quarter.id, quarter);
     } else {
-      setQuarters([...quarters, quarter]);
+      await createQuarter(quarter);
     }
     setIsQuarterFormOpen(false);
     setEditingQuarter(undefined);
   };
 
-  const handleToggleCollapse = (quarterId: string) => {
-    setQuarters(quarters.map(q => 
-      q.id === quarterId 
-        ? { ...q, isCollapsed: !q.isCollapsed }
-        : q
-    ));
+  const handleToggleCollapse = async (quarterId: string) => {
+    const quarter = (quarters || []).find(q => q.id === quarterId);
+    if (quarter) {
+      await updateQuarter(quarterId, { 
+        isCollapsed: !quarter.isCollapsed 
+      });
+    }
   };
 
-  const handleQuarterAction = (quarterId: string, action: string) => {
+  const handleQuarterAction = async (quarterId: string, action: string) => {
     switch (action) {
       case 'edit':
-        const quarter = quarters.find(q => q.id === quarterId);
+        const quarter = (quarters || []).find(q => q.id === quarterId);
         if (quarter) {
           setEditingQuarter(quarter);
           setIsQuarterFormOpen(true);
@@ -289,13 +281,16 @@ export default function Home() {
       case 'delete':
         if (window.confirm('Are you sure you want to delete this quarter? All epics will be moved back to backlog.')) {
           // Move all epics back to backlog
-          setEpics(epics.map(e => 
-            e.quarterId === quarterId 
-              ? { ...e, status: 'backlog', quarterId: undefined, position: undefined }
-              : e
-          ));
+          const quarterEpics = (epics || []).filter(e => e.quarterId === quarterId);
+          for (const epic of quarterEpics) {
+            await updateEpic(epic.id, { 
+              status: 'backlog', 
+              quarterId: undefined, 
+              position: undefined 
+            });
+          }
           // Delete the quarter
-          setQuarters(quarters.filter(q => q.id !== quarterId));
+          await deleteQuarter(quarterId);
         }
         break;
     }
@@ -318,24 +313,51 @@ export default function Home() {
   };
 
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = JSON.parse(e.target?.result as string);
-          if (data.team) setTeam(data.team);
-          if (data.epics) setEpics(data.epics);
-          if (data.quarters) setQuarters(data.quarters);
-        } catch (error) {
-          alert('Failed to import data. Please check the file format.');
-        }
-      };
-      reader.readAsText(file);
-    }
+    // TODO: Implement import functionality with Supabase
+    alert('Import functionality will be available soon!');
   };
 
-  const activeEpic = epics.find(e => e.id === activeId);
+  const activeEpic = epics?.find(e => e.id === activeId);
+
+  // Show loading state while data is being fetched
+  if (!isHydrated || teamLoading || epicsLoading || quartersLoading) {
+    return (
+      <div className="app">
+        <div className="loading-container">
+          <h2>Loading...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  // Show team creation screen if no team exists
+  if (!team) {
+    return (
+      <div className="app">
+        <div className="no-team-container">
+          <h2>Welcome to Roadmapster!</h2>
+          <p>Let's set up your team to get started.</p>
+          <button onClick={() => setIsTeamConfigOpen(true)} className="primary-button">
+            Create Your Team
+          </button>
+        </div>
+        
+        <TeamConfiguration
+          team={null}
+          onTeamUpdate={async (newTeam) => {
+            try {
+              await createTeam(newTeam);
+              setIsTeamConfigOpen(false);
+            } catch (err: any) {
+              alert(err.message || 'Failed to create team. Please try again.');
+            }
+          }}
+          isOpen={isTeamConfigOpen}
+          onClose={() => setIsTeamConfigOpen(false)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="app">
@@ -360,6 +382,21 @@ export default function Home() {
               style={{ display: 'none' }}
             />
           </label>
+          {user && (
+            <>
+              <div className="toolbar-divider" />
+              <div className="user-menu">
+                <span className="user-email">
+                  <User size={16} />
+                  {user.email}
+                </span>
+                <button onClick={signOut} className="toolbar-button">
+                  <LogOut size={16} />
+                  Sign Out
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -371,14 +408,14 @@ export default function Home() {
           onDragStart={handleDragStart}
         >
           <Backlog
-            epics={epics}
+            epics={epics || []}
             onAddEpic={handleAddEpic}
             onEditEpic={handleEditEpic}
           />
           
           <QuartersPanel
-            quarters={quarters}
-            epics={epics}
+            quarters={quarters || []}
+            epics={epics || []}
             team={team}
             onEditEpic={handleEditEpic}
             onToggleCollapse={handleToggleCollapse}
@@ -394,7 +431,13 @@ export default function Home() {
 
       <TeamConfiguration
         team={team}
-        onTeamUpdate={setTeam}
+        onTeamUpdate={async (updatedTeam) => {
+          if (team) {
+            await updateTeam(team.id, updatedTeam);
+          } else {
+            await createTeam(updatedTeam);
+          }
+        }}
         isOpen={isTeamConfigOpen}
         onClose={() => setIsTeamConfigOpen(false)}
       />

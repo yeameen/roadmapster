@@ -2,11 +2,66 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Team Configuration UAT Testing', () => {
   test.beforeEach(async ({ page }) => {
+    // Generate unique email for this test run to avoid conflicts
+    const timestamp = Date.now();
+    const testEmail = `test${timestamp}@example.com`;
+    
     // Navigate to the application
     await page.goto('http://localhost:3000');
     
-    // Wait for the application to load
-    await page.waitForSelector('.app-header');
+    // Check if we're on login page
+    const loginButton = page.locator('[data-testid="email-login-button"]');
+    if (await loginButton.isVisible({ timeout: 5000 }).catch(() => false)) {
+      // Click email login button to show email form
+      await loginButton.click();
+      
+      // Wait for email form to appear
+      await page.waitForSelector('[data-testid="email-input"]');
+      
+      // Fill credentials
+      await page.fill('[data-testid="email-input"]', testEmail);
+      await page.fill('[data-testid="password-input"]', 'testpassword123');
+      
+      // Click the Sign Up button to switch to sign-up mode
+      const signUpButton = page.locator('button.link-button:has-text("Sign Up")');
+      await signUpButton.click();
+      
+      // Wait for the form to switch to sign-up mode (button text changes)
+      await page.waitForSelector('button:has-text("Sign Up")', { timeout: 5000 });
+      
+      // Credentials should still be filled, just click Sign Up
+      await page.click('button:has-text("Sign Up")');
+      
+      // Wait for redirect after sign up
+      await page.waitForURL('http://localhost:3000/', { timeout: 10000 });
+    }
+    
+    // Check if team creation is needed
+    const createTeamButton = page.locator('button:has-text("Create Your Team")');
+    if (await createTeamButton.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await createTeamButton.click();
+      await page.waitForSelector('.modal-overlay', { state: 'visible' });
+      
+      // Fill in team creation form with default values
+      await page.fill('[data-testid="team-name-input"]', 'Engineering Team');
+      
+      // Add default team members
+      const members = ['Alice', 'Bob', 'Carol', 'Dan'];
+      for (const member of members) {
+        await page.fill('.add-member input[type="text"]', member);
+        await page.click('.add-member .add-button');
+      }
+      
+      // Save the team
+      await page.click('button:has-text("Create Team")');
+      await page.waitForSelector('.modal-overlay', { state: 'hidden' });
+      
+      // Wait for the application to load after team creation
+      await page.waitForSelector('.app-header', { timeout: 15000 });
+    } else {
+      // Wait for the application to load (team already exists)
+      await page.waitForSelector('.app-header', { timeout: 15000 });
+    }
   });
 
   test('Complete Team Configuration UAT Scenario', async ({ page }) => {

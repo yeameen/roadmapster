@@ -5,7 +5,7 @@ import { Team, TeamMember } from '../types';
 import { X, Plus, Users } from 'lucide-react';
 
 interface TeamConfigurationProps {
-  team: Team;
+  team: Team | null;
   onTeamUpdate: (team: Team) => void;
   isOpen: boolean;
   onClose: () => void;
@@ -17,13 +17,24 @@ export const TeamConfiguration: React.FC<TeamConfigurationProps> = ({
   isOpen,
   onClose,
 }) => {
-  const [editedTeam, setEditedTeam] = useState<Team>(team);
+  const defaultTeam: Team = {
+    id: 'new',
+    name: `Team ${new Date().toLocaleDateString()}`,
+    quarterWorkingDays: 65,
+    bufferPercentage: 0.2,
+    oncallPerSprint: 1,
+    sprintsInQuarter: 6,
+    members: [],
+  };
+
+  const [editedTeam, setEditedTeam] = useState<Team>(team || defaultTeam);
   const [newMemberName, setNewMemberName] = useState('');
+  const isCreating = !team;
 
   // Reset editedTeam when modal opens with current team data
   React.useEffect(() => {
     if (isOpen) {
-      setEditedTeam(team);
+      setEditedTeam(team || defaultTeam);
     }
   }, [isOpen, team]);
 
@@ -72,7 +83,7 @@ export const TeamConfiguration: React.FC<TeamConfigurationProps> = ({
         <div className="modal-header">
           <h2>
             <Users className="inline mr-2" size={24} />
-            Team Configuration
+            {isCreating ? 'Create Your Team' : 'Team Configuration'}
           </h2>
           <button onClick={onClose} className="close-button">
             <X size={24} />
@@ -183,7 +194,7 @@ export const TeamConfiguration: React.FC<TeamConfigurationProps> = ({
             Cancel
           </button>
           <button onClick={handleSave} className="save-button">
-            Save Configuration
+            {isCreating ? 'Create Team' : 'Save Configuration'}
           </button>
         </div>
       </div>
