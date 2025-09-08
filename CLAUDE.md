@@ -172,6 +172,9 @@ interface Team {
 - **Drag-and-Drop**: Test epic movement between all quarters
 - **Data Persistence**: Verify data survives page refresh
 - **Edge Cases**: Test capacity limits, empty states, multiple quarters
+- **Code Changes**: Whenever making code changes, ALWAYS update associated unit tests and Playwright E2E tests
+- **UI Impact**: If code changes affect UI components or logic, find relevant Playwright tests, update them, and run tests to verify
+- **Test After Changes**: After any code modification, run related tests with `npx playwright test` to ensure no regressions
 
 ## Known Issues & Solutions
 
