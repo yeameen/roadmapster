@@ -7,12 +7,12 @@ import { FullConfig } from '@playwright/test';
 async function globalSetup(config: FullConfig) {
   console.log('🚀 Starting Roadmapster Integration Tests');
   console.log(`📁 Running tests from: ${config.rootDir}`);
-  console.log(`🌐 Base URL: ${config.use?.baseURL || 'http://localhost:3000'}`);
+  console.log(`🌐 Base URL: ${(config as any).use?.baseURL || 'http://localhost:3000'}`);
   console.log(`💻 Workers: ${config.workers}`);
   
   // Set environment variables for test execution
   process.env.TEST_ENV = process.env.TEST_ENV || 'local';
-  process.env.BASE_URL = config.use?.baseURL || 'http://localhost:3000';
+  process.env.BASE_URL = (config as any).use?.baseURL || 'http://localhost:3000';
   
   // Log test environment
   console.log(`🏷️  Environment: ${process.env.TEST_ENV}`);

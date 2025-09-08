@@ -3,6 +3,7 @@ import { BacklogPage } from '../pages/BacklogPage';
 import { QuartersPage } from '../pages/QuartersPage';
 import { TeamConfigPage } from '../pages/TeamConfigPage';
 import { testData } from '../data/test-data-factory';
+import { createAuthenticatedContext } from '../helpers/auth';
 
 /**
  * Custom test fixture with page objects and common setup
@@ -16,6 +17,7 @@ type TestFixtures = {
   setupDefaultQuarters: void;
   clearAllData: void;
   testDataFactory: typeof testData;
+  authenticatedPage: void;
 };
 
 export const test = base.extend<TestFixtures>({
@@ -113,7 +115,16 @@ export const test = base.extend<TestFixtures>({
    */
   testDataFactory: async ({}, use) => {
     await use(testData);
-  }
+  },
+
+  /**
+   * Authenticate before running tests
+   */
+  authenticatedPage: [async ({ page }, use) => {
+    // Log in as test user before test
+    await createAuthenticatedContext(page);
+    await use();
+  }, { auto: true }]  // auto: true means this runs automatically before each test
 });
 
 export { expect };

@@ -220,3 +220,7 @@ The application is ready for deployment to:
 ---
 
 **Note**: When making changes that impact functionality, always test using the UAT Tester agent to ensure quality and prevent regressions.
+
+## Git Commit Guidelines
+
+- Do not add "Co-Authored-By: Claude <noreply@anthropic.com>" to commit messages

@@ -22,7 +22,7 @@ async function globalTeardown(config: FullConfig) {
   // Log test summary if available
   const testInfo = {
     environment: process.env.TEST_ENV || 'local',
-    baseUrl: process.env.BASE_URL || config.use?.baseURL,
+    baseUrl: process.env.BASE_URL || (config as any).use?.baseURL,
     timestamp: new Date().toISOString()
   };
   
