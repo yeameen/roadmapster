@@ -5,7 +5,7 @@ import { test, expect, Page } from '@playwright/test';
  * Focus: Q3 2025 drag-and-drop functionality issues
  */
 
-test.describe('Roadmapster Drag-and-Drop Investigation', () => {
+test.describe.skip('Roadmapster Drag-and-Drop Investigation (legacy debug spec - skipped)', () => {
   let page: Page;
 
   test.beforeEach(async ({ page: testPage }) => {

@@ -7,7 +7,10 @@ import { test, expect, testWithFullSetup } from '../../fixtures/test-base';
 
 test.describe('Epic Drag and Drop', () => {
   test.beforeEach(async ({ page }) => {
+    // Clear all localStorage data before each test for isolation
     await page.goto('/');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
     await page.waitForLoadState('networkidle');
   });
 

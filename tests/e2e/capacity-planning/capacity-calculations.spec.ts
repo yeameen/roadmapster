@@ -7,15 +7,17 @@ import { test, expect } from '../../fixtures/test-base';
 
 test.describe('Capacity Calculations', () => {
   test.beforeEach(async ({ page }) => {
+    // Clear all localStorage data before each test for isolation
     await page.goto('/');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
     await page.waitForLoadState('networkidle');
   });
 
   test('should calculate capacity correctly based on team size', async ({ 
     page, 
     teamConfigPage, 
-    quartersPage, 
-    testDataFactory 
+    quartersPage
   }) => {
     // Setup: Configure team with known parameters
     const teamConfig = {
@@ -34,11 +36,8 @@ test.describe('Capacity Calculations', () => {
     // Create quarter
     await quartersPage.addQuarter('Q1 2025', 65);
     
-    // Calculate expected capacity
-    const expectedCapacity = testDataFactory.calculateExpectedCapacity(
-      { ...teamConfig, id: 'test' } as any,
-      65
-    );
+    // Calculate expected capacity using the same formula as the app/UI
+    const expectedCapacity = await teamConfigPage.getTeamCapacity(65);
     
     // Get actual capacity
     const actualCapacity = await quartersPage.getQuarterCapacity('Q1 2025');

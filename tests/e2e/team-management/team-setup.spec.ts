@@ -7,7 +7,10 @@ import { test, expect } from '../../fixtures/test-base';
 
 test.describe('Team Configuration', () => {
   test.beforeEach(async ({ page }) => {
+    // Clear all localStorage data before each test for isolation
     await page.goto('/');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
     await page.waitForLoadState('networkidle');
   });
 
@@ -17,7 +20,13 @@ test.describe('Team Configuration', () => {
     // Set team name
     await teamConfigPage.setTeamName('Engineering Team Alpha');
     
-    // Add team members
+    // Remove existing default team members
+    const existingMembers = await teamConfigPage.getTeamMembers();
+    for (const member of existingMembers) {
+      await teamConfigPage.removeTeamMember(member.name);
+    }
+    
+    // Add new team members
     await teamConfigPage.addTeamMember('Alice Johnson', 5);
     await teamConfigPage.addTeamMember('Bob Smith', 10);
     await teamConfigPage.addTeamMember('Carol Williams', 3);
@@ -48,6 +57,12 @@ test.describe('Team Configuration', () => {
 
   test('should add and remove team members', async ({ page, teamConfigPage }) => {
     await teamConfigPage.openTeamConfig();
+    
+    // Remove existing default team members first
+    const existingMembers = await teamConfigPage.getTeamMembers();
+    for (const member of existingMembers) {
+      await teamConfigPage.removeTeamMember(member.name);
+    }
     
     // Start with initial members
     await teamConfigPage.addTeamMember('Member 1', 5);

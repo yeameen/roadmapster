@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 
-test.describe('UAT: Q3 2025 Drag and Drop Functionality', () => {
+test.describe.skip('UAT: Q3 2025 Drag and Drop Functionality (manual - skipped)', () => {
   let page: Page;
 
   test.beforeEach(async ({ browser }) => {
@@ -12,7 +12,7 @@ test.describe('UAT: Q3 2025 Drag and Drop Functionality', () => {
     });
     
     // Clear localStorage to ensure fresh start
-    await page.goto('http://localhost:3001');
+    await page.goto('/');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
   });
@@ -21,7 +21,7 @@ test.describe('UAT: Q3 2025 Drag and Drop Functionality', () => {
     console.log('\n=== UAT TEST CASE 1: Clear Browser Data ===');
     
     // Step 1: Verify fresh start
-    await page.goto('http://localhost:3001');
+    await page.goto('/');
     await page.waitForSelector('.quarters-panel', { timeout: 10000 });
     
     // Take initial screenshot

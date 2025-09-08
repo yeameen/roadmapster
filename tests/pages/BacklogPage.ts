@@ -63,7 +63,8 @@ export class BacklogPage extends BasePage {
    * Get count of epics in backlog
    */
   async getEpicCount(): Promise<number> {
-    return await this.epicCards.count();
+    // Count epics only within the backlog container to avoid counting quarter epics
+    return await this.backlogContainer.locator('.epic-card').count();
   }
 
   /**

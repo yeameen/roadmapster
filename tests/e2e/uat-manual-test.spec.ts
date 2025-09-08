@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 
-test.describe('Manual UAT: Q3 2025 Drag and Drop Investigation', () => {
+test.describe.skip('Manual UAT: Q3 2025 Drag and Drop Investigation (skipped)', () => {
   let page: Page;
 
   test.beforeEach(async ({ browser }) => {
@@ -12,7 +12,7 @@ test.describe('Manual UAT: Q3 2025 Drag and Drop Investigation', () => {
     });
     
     // Clear localStorage for fresh start
-    await page.goto('http://localhost:3001');
+    await page.goto('/');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
   });

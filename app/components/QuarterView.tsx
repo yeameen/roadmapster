@@ -77,7 +77,7 @@ export const QuarterView: React.FC<QuarterViewProps> = ({
   );
   
   const capacity = calculateTeamCapacity(team, quarterEpics);
-  const utilizationPercentage = Math.round((usedCapacity / capacity.finalCapacity) * 100);
+  const utilizationPercentage = capacity.utilizationPercentage;
   
   const getStatusColor = () => {
     switch (quarter.status) {

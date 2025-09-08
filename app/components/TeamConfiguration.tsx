@@ -20,6 +20,13 @@ export const TeamConfiguration: React.FC<TeamConfigurationProps> = ({
   const [editedTeam, setEditedTeam] = useState<Team>(team);
   const [newMemberName, setNewMemberName] = useState('');
 
+  // Reset editedTeam when modal opens with current team data
+  React.useEffect(() => {
+    if (isOpen) {
+      setEditedTeam(team);
+    }
+  }, [isOpen, team]);
+
   if (!isOpen) return null;
 
   const handleAddMember = () => {
@@ -76,8 +83,10 @@ export const TeamConfiguration: React.FC<TeamConfigurationProps> = ({
           <div className="config-section">
             <h3>Quarter Settings</h3>
             <div className="form-group">
-              <label>Quarter</label>
+              <label htmlFor="team-name">Quarter</label>
               <input
+                id="team-name"
+                data-testid="team-name-input"
                 type="text"
                 value={editedTeam.name}
                 onChange={(e) => setEditedTeam({ ...editedTeam, name: e.target.value })}
@@ -85,8 +94,10 @@ export const TeamConfiguration: React.FC<TeamConfigurationProps> = ({
               />
             </div>
             <div className="form-group">
-              <label>Working Days This Quarter</label>
+              <label htmlFor="working-days">Working Days This Quarter</label>
               <input
+                id="working-days"
+                data-testid="working-days-input"
                 type="number"
                 value={editedTeam.quarterWorkingDays}
                 onChange={(e) =>
@@ -98,8 +109,10 @@ export const TeamConfiguration: React.FC<TeamConfigurationProps> = ({
               />
             </div>
             <div className="form-group">
-              <label>Buffer Percentage</label>
+              <label htmlFor="buffer-percentage">Buffer Percentage</label>
               <input
+                id="buffer-percentage"
+                data-testid="buffer-percentage-input"
                 type="number"
                 value={editedTeam.bufferPercentage * 100}
                 onChange={(e) =>
@@ -114,8 +127,10 @@ export const TeamConfiguration: React.FC<TeamConfigurationProps> = ({
               <span className="input-suffix">%</span>
             </div>
             <div className="form-group">
-              <label>Oncall per Sprint</label>
+              <label htmlFor="oncall-per-sprint">Oncall per Sprint</label>
               <input
+                id="oncall-per-sprint"
+                data-testid="oncall-per-sprint-input"
                 type="number"
                 value={editedTeam.oncallPerSprint}
                 onChange={(e) =>
@@ -129,8 +144,10 @@ export const TeamConfiguration: React.FC<TeamConfigurationProps> = ({
               <span className="input-suffix">person(s)</span>
             </div>
             <div className="form-group">
-              <label>Sprints in Quarter</label>
+              <label htmlFor="sprints-in-quarter">Sprints in Quarter</label>
               <input
+                id="sprints-in-quarter"
+                data-testid="sprints-in-quarter-input"
                 type="number"
                 value={editedTeam.sprintsInQuarter}
                 onChange={(e) =>

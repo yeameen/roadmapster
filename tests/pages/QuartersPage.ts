@@ -59,30 +59,23 @@ export class QuartersPage extends BasePage {
    */
   async getQuarterCapacity(name: string) {
     const quarter = this.getQuarterByName(name);
-    const capacityText = quarter.locator('.capacity-text, [class*="capacity"]');
-    const capacityBar = quarter.locator('.capacity-bar');
+    // Be more specific - target the capacity text span element
+    const capacityText = quarter.locator('.capacity-text').first();
+    const text = (await capacityText.textContent()) || '';
     
-    const text = await capacityText.textContent() || '';
-    const usedMatch = text.match(/(\d+)\s*\/\s*(\d+)/);
-    
-    let capacityClass = '';
-    if (await capacityBar.isVisible()) {
-      const className = await capacityBar.getAttribute('class') || '';
-      if (className.includes('danger') || className.includes('red')) {
-        capacityClass = 'danger';
-      } else if (className.includes('warning') || className.includes('orange')) {
-        capacityClass = 'warning';
-      } else if (className.includes('safe') || className.includes('green')) {
-        capacityClass = 'safe';
-      }
-    }
-    
-    return {
-      used: usedMatch ? parseInt(usedMatch[1]) : 0,
-      total: usedMatch ? parseInt(usedMatch[2]) : 0,
-      percentage: usedMatch ? (parseInt(usedMatch[1]) / parseInt(usedMatch[2])) * 100 : 0,
-      status: capacityClass
-    };
+    // Handle both positive and negative values
+    const usedMatch = text.match(/(-?\d+)\s*\/\s*(-?\d+)/);
+
+    const used = usedMatch ? parseInt(usedMatch[1]) : 0;
+    const total = usedMatch ? parseInt(usedMatch[2]) : 0;
+    const percentage = total > 0 ? (used / total) * 100 : 0;
+
+    // Derive status from percentage to match app thresholds
+    let status: 'safe' | 'warning' | 'danger' = 'safe';
+    if (percentage > 90) status = 'danger';
+    else if (percentage > 75) status = 'warning';
+
+    return { used, total, percentage, status };
   }
 
   /**

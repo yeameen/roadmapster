@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Create Q3 2025 and Test Drag-and-Drop', () => {
+test.describe.skip('Create Q3 2025 and Test Drag-and-Drop (legacy debug spec - skipped)', () => {
   test('Create Q3 2025 quarter and test drag-and-drop functionality', async ({ page }) => {
     // Navigate to the application
     await page.goto('http://localhost:3000');

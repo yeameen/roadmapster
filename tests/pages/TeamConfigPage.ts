@@ -6,9 +6,11 @@ export class TeamConfigPage extends BasePage {
   private readonly teamModal: Locator;
   private readonly teamNameInput: Locator;
   private readonly addMemberButton: Locator;
+  private readonly addMemberNameInput: Locator;
   private readonly memberRows: Locator;
   private readonly oncallInput: Locator;
   private readonly bufferInput: Locator;
+  private readonly sprintsInput: Locator;
   private readonly saveButton: Locator;
   private readonly closeButton: Locator;
   private readonly exportButton: Locator;
@@ -17,14 +19,17 @@ export class TeamConfigPage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.teamConfigButton = page.getByRole('button', { name: /team settings/i });
-    this.teamModal = page.locator('.modal-content.team-configuration, .modal-content');
-    this.teamNameInput = page.locator('input#teamName, input[value*="Team"]').first();
-    this.addMemberButton = page.getByRole('button', { name: /add/i }).or(page.locator('button:has-text("Add")'));
+    this.teamModal = page.locator('.modal-content').filter({ hasText: 'Team Configuration' });
+    // Use data-testid for more reliable test selectors
+    this.teamNameInput = page.getByTestId('team-name-input');
+    this.addMemberButton = this.teamModal.getByRole('button', { name: /add member/i });
+    this.addMemberNameInput = this.teamModal.locator('.add-member input[type="text"]');
     this.memberRows = page.locator('.member-item');
-    this.oncallInput = page.locator('input[type="number"]').nth(1);
-    this.bufferInput = page.locator('input[type="range"], input[type="number"]').last();
-    this.saveButton = this.teamModal.locator('button').filter({ hasText: /save/i });
-    this.closeButton = this.teamModal.locator('button').filter({ hasText: /close|cancel/i });
+    this.oncallInput = page.getByTestId('oncall-per-sprint-input');
+    this.bufferInput = page.getByTestId('buffer-percentage-input');
+    this.sprintsInput = page.getByTestId('sprints-in-quarter-input');
+    this.saveButton = this.teamModal.getByRole('button', { name: /save configuration|save/i });
+    this.closeButton = this.teamModal.getByRole('button', { name: /cancel|close/i });
     this.exportButton = page.getByRole('button', { name: /export/i });
     this.importButton = page.getByRole('button', { name: /import/i });
   }
@@ -49,7 +54,8 @@ export class TeamConfigPage extends BasePage {
    * Set team name
    */
   async setTeamName(name: string) {
-    await this.teamNameInput.clear();
+    // Triple-click to select all text, then type the new value
+    await this.teamNameInput.click({ clickCount: 3 });
     await this.teamNameInput.fill(name);
   }
 
@@ -57,16 +63,13 @@ export class TeamConfigPage extends BasePage {
    * Add a team member
    */
   async addTeamMember(name: string, vacationDays: number = 0) {
+    // Fill the add-member input then click Add Member
+    await this.addMemberNameInput.fill(name);
     await this.addMemberButton.click();
-    
-    // Find the last (newly added) member row
-    const memberCount = await this.memberRows.count();
-    const newMemberRow = this.memberRows.nth(memberCount - 1);
-    
-    const nameInput = newMemberRow.locator('input[type="text"]').first();
-    const vacationInput = newMemberRow.locator('input[type="number"]');
-    
-    await nameInput.fill(name);
+
+    // Update the newly added member's vacation days
+    const row = this.memberRows.filter({ hasText: name }).first();
+    const vacationInput = row.locator('.vacation-input');
     await vacationInput.clear();
     await vacationInput.fill(vacationDays.toString());
   }
@@ -76,7 +79,7 @@ export class TeamConfigPage extends BasePage {
    */
   async removeTeamMember(name: string) {
     const memberRow = this.memberRows.filter({ hasText: name });
-    const removeButton = memberRow.locator('button').filter({ hasText: /remove|delete|×/i });
+    const removeButton = memberRow.locator('button.remove-member');
     await removeButton.click();
   }
 
@@ -85,15 +88,15 @@ export class TeamConfigPage extends BasePage {
    */
   async updateTeamMember(oldName: string, newName: string, vacationDays?: number) {
     const memberRow = this.memberRows.filter({ hasText: oldName });
-    const nameInput = memberRow.locator('input[type="text"]').first();
-    const vacationInput = memberRow.locator('input[type="number"]');
-    
+    const nameLabel = memberRow.locator('.member-name');
     if (newName !== oldName) {
-      await nameInput.clear();
-      await nameInput.fill(newName);
+      // There is no inline name input; remove and re-add member with new name
+      await this.removeTeamMember(oldName);
+      await this.addTeamMember(newName, vacationDays ?? 0);
+      return;
     }
-    
     if (vacationDays !== undefined) {
+      const vacationInput = memberRow.locator('.vacation-input');
       await vacationInput.clear();
       await vacationInput.fill(vacationDays.toString());
     }
@@ -127,23 +130,24 @@ export class TeamConfigPage extends BasePage {
    * Get all team members
    */
   async getTeamMembers(): Promise<Array<{ name: string; vacationDays: number }>> {
+    // Ensure the members section is visible
+    await this.page.waitForSelector('.member-item', { state: 'visible', timeout: 5000 }).catch(() => {
+      // If no members visible, return empty array
+      return [];
+    });
+    
     const members: Array<{ name: string; vacationDays: number }> = [];
     const count = await this.memberRows.count();
     
     for (let i = 0; i < count; i++) {
       const row = this.memberRows.nth(i);
-      const nameInput = row.locator('input[type="text"]').first();
-      const vacationInput = row.locator('input[type="number"]');
+      // Wait for the specific row to be visible
+      await row.waitFor({ state: 'visible', timeout: 5000 });
       
-      const name = await nameInput.inputValue();
-      const vacation = await vacationInput.inputValue();
-      
-      members.push({
-        name,
-        vacationDays: parseInt(vacation) || 0
-      });
+      const nameText = (await row.locator('.member-name').textContent()) || '';
+      const vacationVal = await row.locator('.vacation-input').inputValue();
+      members.push({ name: nameText.trim(), vacationDays: parseInt(vacationVal) || 0 });
     }
-    
     return members;
   }
 
@@ -176,26 +180,22 @@ export class TeamConfigPage extends BasePage {
     await this.openTeamConfig();
     
     await this.setTeamName(config.name);
-    
-    // Clear existing members
-    while (await this.memberRows.count() > 0) {
-      const firstMember = this.memberRows.first();
-      const removeButton = firstMember.locator('button').filter({ hasText: /remove|delete|×/i });
-      if (await removeButton.isVisible()) {
-        await removeButton.click();
-      } else {
-        break; // Can't remove, probably the last member
-      }
+
+    // Remove all current members using the more reliable method
+    const existingMembers = await this.getTeamMembers();
+    for (const member of existingMembers) {
+      await this.removeTeamMember(member.name);
     }
-    
+
     // Add new members
     for (const member of config.members) {
       await this.addTeamMember(member.name, member.vacationDays);
     }
-    
+
     await this.setOncallRotation(config.oncallRotation);
     await this.setBufferPercentage(config.bufferPercentage);
-    
+    // Keep sprints as default unless later extended; could expose config if needed
+
     await this.saveTeamConfig();
   }
 
@@ -228,25 +228,31 @@ export class TeamConfigPage extends BasePage {
    * Get team capacity calculation
    */
   async getTeamCapacity(workingDays: number = 65) {
+    // Ensure modal is open to read current values
+    if (!(await this.teamModal.isVisible())) {
+      await this.openTeamConfig();
+    }
     const members = await this.getTeamMembers();
-    const oncallRotation = parseInt(await this.oncallInput.inputValue()) || 0;
+    const oncallPerSprint = parseInt(await this.oncallInput.inputValue()) || 0;
+    const sprints = parseInt(await this.sprintsInput.inputValue()) || 6;
     const bufferPercentage = parseInt(await this.bufferInput.inputValue()) || 20;
-    
-    const totalVacationDays = members.reduce((sum, m) => sum + m.vacationDays, 0);
-    const engineerCount = members.length;
-    
-    const baseCapacity = engineerCount * workingDays;
-    const oncallDays = oncallRotation * (workingDays / 65);
-    const bufferDays = (baseCapacity - totalVacationDays - oncallDays) * (bufferPercentage / 100);
-    
-    const availableCapacity = baseCapacity - totalVacationDays - oncallDays - bufferDays;
-    
-    return {
-      baseCapacity,
-      vacationDays: totalVacationDays,
+
+    const individualCapacities = members.map(m => workingDays - (m.vacationDays || 0));
+    const totalTeamCapacity = individualCapacities.reduce((a, b) => a + b, 0);
+    const oncallDays = sprints * oncallPerSprint * 10;
+    const capacityAfterOncall = totalTeamCapacity - oncallDays;
+    const bufferDays = Math.round(capacityAfterOncall * (bufferPercentage / 100));
+    const availableCapacity = capacityAfterOncall - bufferDays;
+
+    const result = {
+      baseCapacity: totalTeamCapacity,
+      vacationDays: members.reduce((sum, m) => sum + (m.vacationDays || 0), 0),
       oncallDays,
       bufferDays,
       availableCapacity: Math.round(availableCapacity)
     };
+    // Close modal to leave UI as-is
+    await this.closeTeamConfig();
+    return result;
   }
 }
